@@ -3,59 +3,113 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>[ 易經數字 ]</title>
+<title>[ 易經數字 ] v3.2</title>
+<link rel="icon" type="image/svg+xml" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="%23fff" stroke="%23000" stroke-width="4"/><path d="M50 2 A48 48 0 0 0 50 98 A24 24 0 0 0 50 50 A24 24 0 0 0 50 2z" fill="%23000"/><circle cx="50" cy="26" r="8" fill="%23fff"/><circle cx="50" cy="74" r="8" fill="%23000"/></svg>'>
+<meta name="theme-color" content="#0f8f86">
 <style>
   :root{
     --bg:#e7fbf8;--card:#ffffff;--text:#0f2a26;--muted:#57736c;--accent:#0f8f86;
     --border:#cdebe6;--shadow:0 10px 28px rgba(6,107,82,.12);
   }
+  .dark{
+    --bg:#0b1413;--card:#0f1c1a;--text:#e6fffb;--muted:#8ec1b8;--accent:#23b6af;
+    --border:#143230;--shadow:0 10px 28px rgba(0,0,0,.35);
+  }
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans TC","PingFang TC","Hiragino Sans","Microsoft JhengHei",Arial,sans-serif}
-  .wrap{max-width:700px;margin:40px auto;padding:0 16px}
+  .wrap{max-width:780px;margin:34px auto;padding:0 16px}
   .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:16px}
-  h1{margin:0 0 12px;font-size:26px;letter-spacing:.5px;text-align:center;color:#0d6f68}
+  h1{margin:0 0 8px;font-size:26px;letter-spacing:.5px;text-align:center;color:var(--accent)}
+  .ver{color:var(--muted);text-align:center;margin:0 0 12px;font-size:12px}
   label{display:block;font-size:14px;margin:10px 0 6px;color:var(--muted)}
-  input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;font-size:16px;background:#fbfffe}
-  input:focus{outline:none;box-shadow:0 0 0 3px rgba(15,143,134,.18);border-color:#bfeee5}
+  input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;font-size:16px;background:transparent;color:var(--text)}
+  input::placeholder{color:color-mix(in oklab, var(--muted) 60%, transparent)}
+  input:focus{outline:none;box-shadow:0 0 0 3px color-mix(in oklab, var(--accent) 30%, transparent);border-color:color-mix(in oklab, var(--accent) 40%, var(--border))}
   .row{display:flex;gap:10px;flex-wrap:wrap}
   .row>*{flex:1 1 260px}
-  button{padding:12px 16px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer}
-  button:hover{filter:brightness(.95)}
+  .btn{padding:12px 16px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer}
+  .btn:hover{filter:brightness(.95)}
+  .btn.secondary{background:#0f2a26}
   .muted{color:var(--muted)}
-  .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:#f0fbfa;color:#0b3b38;font-size:12px;margin-right:6px}
-  pre{background:#f4fbfa;border:1px solid var(--border);border-radius:12px;padding:12px;white-space:pre-wrap}
-  #result{display:none}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:color-mix(in oklab, var(--accent) 10%, transparent);color:var(--text);font-size:12px;margin-right:6px}
+  pre{background:color-mix(in oklab, var(--bg) 70%, #fff 30%);border:1px solid var(--border);border-radius:12px;padding:12px;white-space:pre-wrap}
+  #result, #resultNum{display:none}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .toggle{display:inline-flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+  .switch{position:relative;width:44px;height:26px;background:var(--border);border-radius:999px;cursor:pointer;transition:.2s}
+  .knob{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--card);box-shadow:var(--shadow);transition:.2s}
+  .dark .switch{background:#0a332f}
+  .dark .knob{left:21px}
+  .tabs{display:flex;gap:8px;margin:8px 0 12px}
+  .tab{padding:8px 12px;border:1px solid var(--border);border-radius:999px;cursor:pointer;color:var(--muted)}
+  .tab.active{background:var(--accent);color:#fff;border-color:transparent}
+  .hide{display:none}
 </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
+      <div class="topbar">
+        <div></div>
+        <div class="toggle" id="themeToggleLabel">湖水綠</div>
+        <div class="switch" id="themeSwitch" aria-label="切換主題"><div class="knob"></div></div>
+      </div>
       <h1>[ 易經數字 ]</h1>
-      <div class="row">
-        <div>
-          <label for="idn">身分證號</label>
-          <input id="idn" placeholder="例如 A123456789">
+      <p class="ver">v3.2 · A=11；<b>0=重複前碼</b>；<b>5=同化下一碼（peek，不吃下一碼）</b>；pair 先用舊 prev，再更新。</p>
+
+      <div class="tabs">
+        <div id="tabID" class="tab active">身分證＋生日</div>
+        <div id="tabNum" class="tab">純數字</div>
+      </div>
+
+      <div id="paneID">
+        <div class="row">
+          <div>
+            <label for="idn">身分證號</label>
+            <input id="idn" placeholder="例如 A123456789">
+          </div>
+          <div>
+            <label for="birth">出生日期</label>
+            <input id="birth" type="date">
+          </div>
         </div>
-        <div>
-          <label for="birth">出生日期</label>
-          <input id="birth" type="date">
+        <div class="row" style="margin-top:12px">
+          <button id="go" class="btn">計算</button>
+          <button id="reset" class="btn secondary">重設</button>
         </div>
       </div>
-      <div class="row" style="margin-top:12px">
-        <button id="go">計算</button>
-        <button id="reset" style="background:#0f2a26">重設</button>
+
+      <div id="paneNum" class="hide">
+        <div class="row">
+          <div>
+            <label for="numStr">純數字</label>
+            <input id="numStr" placeholder="例如 11220587476">
+          </div>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button id="goNum" class="btn">計算（純數字）</button>
+          <button id="resetNum" class="btn secondary">重設</button>
+        </div>
       </div>
     </div>
 
+    <!-- 結果：身分證＋生日 -->
     <div id="result" class="card" style="margin-top:14px">
       <div id="headline" class="muted"></div>
       <pre id="out"></pre>
+    </div>
+
+    <!-- 結果：純數字 -->
+    <div id="resultNum" class="card" style="margin-top:14px">
+      <div id="headlineNum" class="muted"></div>
+      <pre id="outNum"></pre>
     </div>
   </div>
 
 <script>
 const BUCKETS = ["0-10","10-15","15-20","20-25","25-30","30-35","35-40","40-45","45-50","50-70"];
 
+// 兩碼→名稱
 const FIELD = {
   11:"伏位",19:"延年",14:"生氣",13:"天醫",17:"禍害",16:"六煞",12:"絕命",18:"五鬼",
   22:"伏位",26:"延年",28:"生氣",27:"天醫",23:"禍害",29:"六煞",21:"絕命",24:"五鬼",
@@ -70,7 +124,7 @@ const FIELD = {
 function letterTo11(ch){
   const code = ch.toUpperCase().charCodeAt(0);
   if(code<65 || code>90) return null;
-  const n = code - 64;
+  const n = code - 64; 
   const tens = Math.floor((n - 1) / 9) + 1;
   const ones = ((n - 1) % 9) + 1;
   return `${tens}${ones}`;
@@ -83,6 +137,7 @@ function calcAge(b){
   if(m<0 || (m===0 && t.getDate()<d.getDate())) a--;
   return a;
 }
+
 function bucketIdx(age){
   if(age<10) return 0;
   if(age<15) return 1;
@@ -97,31 +152,60 @@ function bucketIdx(age){
   return -1;
 }
 
-// 產生十組兩碼：0 重複前碼；5 同化下一碼且「連續兩次」；其他正常連接。
-function buildPairs(idn){
+// pair 先用舊 prev，1..9(非5) 組完後才更新 prev；0 repeat；5 peek next。
+function buildPairsFromID(idn){
   const s = (idn||"").toUpperCase().trim();
   if(!s) return [];
-  const p = letterTo11(s[0]); if(!p) return [];
+  const p = letterTo11(s[0]);
+  if(!p) return [];
   let pairs = [p];
   let prevEnd = p[1];
-  for(let i=1; i<s.length && pairs.length<10; i++){
+
+  for(let i=1;i<s.length && pairs.length<10;i++){
     const ch = s[i];
     if(!/[0-9]/.test(ch)) continue;
+
+    const oldPrev = prevEnd;
+    let second;
+
     if(ch==='0'){
-      // repeat previous once
-      pairs.push(`${prevEnd}${prevEnd}`);
-      // prevEnd keeps
+      second = oldPrev;
     }else if(ch==='5'){
-      // peek next; add the same pair twice
-      const next = (i+1<s.length && /[0-9]/.test(s[i+1])) ? s[i+1] : prevEnd;
-      const pair = `${prevEnd}${next}`;
-      pairs.push(pair);
-      if(pairs.length<10) pairs.push(pair);
-      // prevEnd keeps; next not consumed
+      const next = (i+1<s.length && /[0-9]/.test(s[i+1])) ? s[i+1] : oldPrev;
+      second = next;
     }else{
-      pairs.push(`${prevEnd}${ch}`);
+      second = ch;
       prevEnd = ch;
     }
+    pairs.push(`${oldPrev}${second}`);
+  }
+  while(pairs.length<10){
+    pairs.push(`${prevEnd}${prevEnd}`);
+  }
+  return pairs.slice(0,10);
+}
+
+// 純數字模式：以第一碼為 prev，首組 pair=dd；後續同規則（0 repeat；5 peek；其餘更新 prev）。
+function buildPairsFromNumber(numStr){
+  const s = (numStr||"").replace(/\D+/g,"");
+  if(!s) return [];
+  let pairs = [];
+  let prevEnd = s[0];
+  pairs.push(`${prevEnd}${prevEnd}`); // 第一組
+  for(let i=1;i<s.length && pairs.length<10;i++){
+    const ch = s[i];
+    const oldPrev = prevEnd;
+    let second;
+    if(ch==='0'){
+      second = oldPrev;
+    }else if(ch==='5'){
+      const next = (i+1<s.length && /[0-9]/.test(s[i+1])) ? s[i+1] : oldPrev;
+      second = next;
+    }else{
+      second = ch;
+      prevEnd = ch;
+    }
+    pairs.push(`${oldPrev}${second}`);
   }
   while(pairs.length<10){
     pairs.push(`${prevEnd}${prevEnd}`);
@@ -140,11 +224,12 @@ function countMode(arr){
   return best;
 }
 
+// 身分證＋生日
 document.getElementById('go').addEventListener('click', ()=>{
   const idn = document.getElementById('idn').value.trim();
   const birth = document.getElementById('birth').value;
   if(!idn || !birth){ alert('請輸入身分證號與出生日期'); return; }
-  const pairs = buildPairs(idn);
+  const pairs = buildPairsFromID(idn);
   const names = pairs.map(p=> FIELD[p] || "—");
   const age = calcAge(birth);
   const bidx = bucketIdx(age);
@@ -162,12 +247,69 @@ document.getElementById('go').addEventListener('click', ()=>{
     `<span class="pill">年齡 ${age}</span><span class="pill">區間 ${BUCKETS[bidx]}</span>`;
   document.getElementById('out').textContent = txt;
   document.getElementById('result').style.display = 'block';
+  document.getElementById('resultNum').style.display = 'none';
+  console.log('ID pairs =', pairs);
 });
 
 document.getElementById('reset').addEventListener('click', ()=>{
   document.getElementById('idn').value='';
   document.getElementById('birth').value='';
   document.getElementById('result').style.display='none';
+});
+
+// 純數字
+document.getElementById('goNum').addEventListener('click', ()=>{
+  const numStr = document.getElementById('numStr').value.trim();
+  if(!numStr){ alert('請輸入純數字'); return; }
+  const pairs = buildPairsFromNumber(numStr);
+  const names = pairs.map(p=> FIELD[p] || "—");
+  let txt = "";
+  for(let i=0;i<10;i++){
+    txt += `第${i+1}段：${pairs[i]}  ${names[i]}\n`;
+  }
+  document.getElementById('headlineNum').innerHTML = `<span class="pill">純數字推算</span>`;
+  document.getElementById('outNum').textContent = txt;
+  document.getElementById('resultNum').style.display = 'block';
+  document.getElementById('result').style.display = 'none';
+  console.log('NUM pairs =', pairs);
+});
+
+document.getElementById('resetNum').addEventListener('click', ()=>{
+  document.getElementById('numStr').value='';
+  document.getElementById('resultNum').style.display='none';
+});
+
+// Tabs
+const tabID = document.getElementById('tabID');
+const tabNum = document.getElementById('tabNum');
+const paneID = document.getElementById('paneID');
+const paneNum = document.getElementById('paneNum');
+function setTab(which){
+  if(which==='id'){
+    tabID.classList.add('active'); tabNum.classList.remove('active');
+    paneID.classList.remove('hide'); paneNum.classList.add('hide');
+    document.getElementById('resultNum').style.display='none';
+  }else{
+    tabID.classList.remove('active'); tabNum.classList.add('active');
+    paneID.classList.add('hide'); paneNum.classList.remove('hide');
+    document.getElementById('result').style.display='none';
+  }
+}
+tabID.addEventListener('click',()=>setTab('id'));
+tabNum.addEventListener('click',()=>setTab('num'));
+
+// Theme toggle
+const labelEl = document.getElementById('themeToggleLabel');
+const switchEl = document.getElementById('themeSwitch');
+function setTheme(mode){
+  if(mode==='dark'){ document.body.classList.add('dark'); labelEl.textContent='黑色主題'; }
+  else{ document.body.classList.remove('dark'); labelEl.textContent='湖水綠'; }
+  localStorage.setItem('iching_theme', mode);
+}
+setTheme(localStorage.getItem('iching_theme') || 'light');
+switchEl.addEventListener('click', ()=>{
+  const now = document.body.classList.contains('dark')?'light':'dark';
+  setTheme(now);
 });
 </script>
 </body>

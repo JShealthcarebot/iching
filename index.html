@@ -1,212 +1,131 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>[ 易經數字 · 64卦 ]</title>
-<style>
-  :root{
-    --bg:#f5f7fb;--card:#ffffff;--text:#0f172a;--muted:#475569;--accent:#23B6AF;
-    --border:#e5e7eb;--shadow:0 8px 24px rgba(15,23,42,.08);
-  }
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans TC","PingFang TC","Hiragino Sans",Arial,sans-serif}
-  .wrap{max-width:760px;margin:40px auto;padding:0 16px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:16px}
-  h1{margin:0 0 10px;font-size:22px;letter-spacing:.3px}
-  .sub{margin:0 0 16px;color:var(--muted);font-size:14px}
-  label{display:block;font-size:14px;margin:10px 0 6px;color:var(--muted)}
-  input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;font-size:16px}
-  input:focus{outline:none;box-shadow:0 0 0 3px rgba(35,182,175,.2);border-color:#bdecea}
-  .row{display:flex;gap:10px;flex-wrap:wrap}
-  .row > *{flex:1 1 240px}
-  button{padding:12px 16px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
-  button:hover{filter:brightness(.95)}
-  .muted{color:var(--muted)}
-  .grid{display:grid;gap:10px}
-  .g2{grid-template-columns:1fr 1fr}
-  @media (max-width:740px){.g2{grid-template-columns:1fr}}
-  .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:#f0fbfa;color:#0b3b38;font-size:12px}
-  table{width:100%;border-collapse:separate;border-spacing:0 6px}
-  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);font-size:14px}
-  .result{margin-top:14px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>易經數字計算</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0f7fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #00796b;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            margin-top: 20px;
+            width: 100%;
+            padding: 10px;
+            background-color: #00796b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #004d40;
+        }
+        pre {
+            background: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>[ 易經數字 · 64卦 ]</h1>
-      <p class="sub">輸入出生年月日與身分證字號 → 計算年齡、對應你目前的流年區間，並產生 10 組卦象；出現次數最多者為「本命」。頁面預設空白，需手動輸入。</p>
-      <div class="row">
-        <div>
-          <label for="birth">出生年月日</label>
-          <input id="birth" type="date" placeholder="YYYY-MM-DD" />
-        </div>
-        <div>
-          <label for="idn">身分證字號</label>
-          <input id="idn" placeholder="例如：A123456789" />
-        </div>
-      </div>
-      <div class="row" style="margin-top:12px">
-        <button id="go">計算</button>
-        <button id="reset" style="background:#0f172a">重設</button>
-      </div>
-
-      <div id="out" class="result" style="display:none">
-        <div id="headline" style="margin-bottom:10px"></div>
-        <div class="grid g2">
-          <div class="card" style="padding:12px">
-            <div class="muted">計算結果</div>
-            <div id="summary" style="font-weight:800;margin-top:6px"></div>
-            <div id="notes" class="muted" style="font-size:12px;margin-top:8px">說明：本頁使用確定性雜湊（依身分證+生日）為每個年齡段生成卦象；相同輸入會得到相同結果。並以「出現次數最多的卦名」作為本命；若次數相同，取較早出現者。</div>
-          </div>
-          <div class="card" style="padding:12px">
-            <div class="muted">年齡區間</div>
-            <div id="bucket" style="margin-top:6px"></div>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:12px">
-          <div class="muted">十組卦象（依區間順序）</div>
-          <table id="table">
-            <thead><tr><th>區間</th><th>卦序</th><th>卦名</th></tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
+    <div class="container">
+        <h1>[ 易經數字 ]</h1>
+        <label>身分證號：</label>
+        <input type="text" id="idNumber" placeholder="例如 A229156253">
+        <label>出生日期：</label>
+        <input type="date" id="birthDate">
+        <button onclick="calculate()">計算</button>
+        <pre id="result"></pre>
     </div>
-  </div>
 
-<script>
-// 64卦（王序）
-const GUA_NAMES = [
-  "乾","坤","屯","蒙","需","訟","師","比","小畜","履","泰","否","同人","大有","謙","豫",
-  "隨","蠱","臨","觀","噬嗑","賁","剝","復","無妄","大畜","頤","大過","坎","離","咸","恆",
-  "遯","大壯","晉","明夷","家人","睽","蹇","解","損","益","夬","姤","萃","升","困","井",
-  "革","鼎","震","艮","漸","歸妹","豐","旅","巽","兌","渙","節","中孚","小過","既濟","未濟"
-];
-
-const BUCKETS = [
-  "0-10","10-15","15-20","20-25","25-30","30-35","35-40","40-45","45-50","50-70"
-];
-
-function calcAge(birthStr){
-  const t = new Date(); const b = new Date(birthStr);
-  let age = t.getFullYear() - b.getFullYear();
-  const m = t.getMonth() - b.getMonth();
-  if(m < 0 || (m === 0 && t.getDate() < b.getDate())) age--;
-  return age;
-}
-
-function bucketIndex(age){
-  if(age<10) return 0;
-  if(age<15) return 1;
-  if(age<20) return 2;
-  if(age<25) return 3;
-  if(age<30) return 4;
-  if(age<35) return 5;
-  if(age<40) return 6;
-  if(age<45) return 7;
-  if(age<50) return 8;
-  if(age<=70) return 9;
-  return -1;
-}
-
-// 簡單且穩定的 64 範圍雜湊
-function hash64(str){
-  let h = 2166136261>>>0; // FNV-like
-  for(let i=0;i<str.length;i++){
-    h ^= str.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  // 轉成 1..64
-  return (h % 64 + 64) % 64 + 1;
-}
-
-function generateSequence(idn, birthStr){
-  // 針對 10 個年齡區間，各自以 (idn + yyyymmdd + '#' + index) 生成 1..64 的卦序
-  const d = new Date(birthStr);
-  const y = d.getFullYear().toString().padStart(4,'0');
-  const m = (d.getMonth()+1).toString().padStart(2,'0');
-  const day = d.getDate().toString().padStart(2,'0');
-  const base = idn.toUpperCase().replace(/[^A-Z0-9]/g,'') + y + m + day;
-  const seq = [];
-  for(let i=0;i<10;i++){
-    const idx = hash64(base + "#" + i); // 1..64
-    seq.push(idx);
-  }
-  return seq;
-}
-
-function summarizeBenming(seq){
-  // 本命 = 出現次數最多的卦名（若並列，取最先出現者）
-  const counts = new Map();
-  let bestIdx = 0;
-  for(let i=0;i<seq.length;i++){
-    const name = GUA_NAMES[seq[i]-1];
-    counts.set(name, (counts.get(name)||0)+1);
-  }
-  let bestName = null, bestCount = -1, firstPos = seq.length;
-  for(let i=0;i<seq.length;i++){
-    const name = GUA_NAMES[seq[i]-1];
-    const c = counts.get(name);
-    if(c > bestCount || (c===bestCount && i < firstPos)){
-      bestCount = c; bestName = name; firstPos = i; bestIdx = seq[i];
-    }
-  }
-  return {name: bestName, count: bestCount, idx: bestIdx};
-}
-
-function formatBucket(idx){
-  return idx>=0 ? BUCKETS[idx] : "超出範圍";
-}
-
-document.getElementById('go').addEventListener('click', ()=>{
-  const birth = document.getElementById('birth').value;
-  const idn = document.getElementById('idn').value.trim();
-  if(!birth || !idn){ alert('請完整輸入「出生年月日」與「身分證字號」。'); return; }
-
-  const age = calcAge(birth);
-  const bidx = bucketIndex(age);
-  if(bidx === -1){ alert('目前年齡超出支援範圍（僅 0–70）。'); return; }
-
-  const seq = generateSequence(idn, birth); // 10 個卦序（1..64）
-  const names = seq.map(i => GUA_NAMES[i-1]);
-  const ben = summarizeBenming(seq);
-  const liuIdx = seq[bidx];
-  const liuName = GUA_NAMES[liuIdx-1];
-
-  // Summary
-  const headline = document.getElementById('headline');
-  const summary = document.getElementById('summary');
-  const bucket = document.getElementById('bucket');
-  const out = document.getElementById('out');
-
-  headline.innerHTML = `<span class="pill">年齡 ${age}</span>　<span class="pill">目前區間 ${formatBucket(bidx)}</span>`;
-  summary.innerHTML = `本命：<b>${ben.name}</b>（${ben.idx}，次數 ${ben.count}）　｜　流年：<b>${liuName}</b>（${liuIdx}）`;
-  bucket.textContent = BUCKETS.map((b,i)=> i===bidx ? `▶ ${b}` : b).join("　");
-
-  // Table
-  const tbody = document.querySelector('#table tbody');
-  tbody.innerHTML = "";
-  for(let i=0;i<10;i++){
-    const tr = document.createElement('tr');
-    const td1 = document.createElement('td'); td1.textContent = BUCKETS[i];
-    const td2 = document.createElement('td'); td2.textContent = seq[i];
-    const td3 = document.createElement('td'); td3.textContent = names[i];
-    if(i===bidx){ td1.style.fontWeight = td2.style.fontWeight = td3.style.fontWeight = '800'; }
-    tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
-    tbody.appendChild(tr);
-  }
-
-  out.style.display = 'block';
-});
-
-document.getElementById('reset').addEventListener('click', ()=>{
-  document.getElementById('birth').value = "";
-  document.getElementById('idn').value = "";
-  document.getElementById('out').style.display = 'none';
-});
-</script>
+    <script>
+        const letterMap = {
+            A: 11, B: 12, C: 13, D: 14, E: 15, F: 16, G: 17, H: 18, I: 19, J: 20,
+            K: 21, L: 22, M: 23, N: 24, O: 25, P: 26, Q: 27, R: 28, S: 29, T: 30,
+            U: 31, V: 32, W: 33, X: 34, Y: 35, Z: 36
+        };
+        const meaningMap = {
+            "11": "伏位", "12": "絕命", "13": "生氣", "14": "天醫",
+            "15": "禍害", "16": "六煞", "17": "延年", "18": "生氣",
+            "19": "天醫", "20": "伏位", "21": "禍害", "22": "伏位",
+            "23": "禍害", "24": "天醫", "25": "絕命", "26": "生氣",
+            "27": "延年", "28": "天醫", "29": "六煞", "30": "伏位",
+            "31": "延年", "32": "生氣", "33": "伏位", "34": "天醫",
+            "35": "絕命", "36": "禍害", "91": "延年", "66": "伏位"
+        };
+        function calculate() {
+            const id = document.getElementById('idNumber').value.trim().toUpperCase();
+            const birth = document.getElementById('birthDate').value;
+            if (!id || !birth) {
+                alert("請輸入身分證號與出生日期");
+                return;
+            }
+            const birthYear = new Date(birth).getFullYear();
+            const age = new Date().getFullYear() - birthYear;
+            let numbers = [];
+            let prevNum = letterMap[id[0]];
+            numbers.push(prevNum);
+            for (let i = 1; i < id.length; i++) {
+                let cur = parseInt(id[i]);
+                if (cur === 0) {
+                    numbers.push(prevNum);
+                } else if (cur === 5) {
+                    numbers.push(parseInt(id[i+1]) ? parseInt(id[i+1]) + prevNum - prevNum + parseInt(id[i+1]) : prevNum);
+                } else {
+                    let numStr = "" + prevNum.toString().slice(-1) + cur;
+                    numbers.push(parseInt(numStr));
+                    prevNum = cur;
+                }
+            }
+            const ageRanges = [
+                [0,10],[10,15],[15,20],[20,25],[25,30],
+                [30,35],[35,40],[40,45],[45,50],[50,70]
+            ];
+            let output = "";
+            ageRanges.forEach((range, idx) => {
+                let val = numbers[idx];
+                output += `${range[0]}-${range[1]}：${val} ${meaningMap[val] || ""}\n`;
+            });
+            let counts = {};
+            numbers.forEach(num => {
+                let meaning = meaningMap[num] || "";
+                if (!counts[meaning]) counts[meaning] = 0;
+                counts[meaning]++;
+            });
+            let mainLife = Object.keys(counts).reduce((a,b)=> counts[a]>counts[b]?a:b);
+            let currentPeriod = ageRanges.findIndex(r => age >= r[0] && age < r[1]);
+            let currentMeaning = meaningMap[numbers[currentPeriod]] || "";
+            output += `\n【排列結果】\n本命：${mainLife}\n流年：${currentMeaning}`;
+            document.getElementById('result').innerText = output;
+        }
+    </script>
 </body>
 </html>

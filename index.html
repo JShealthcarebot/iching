@@ -1,131 +1,188 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>易經數字計算</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #e0f7fa;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 500px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        h1 {
-            text-align: center;
-            color: #00796b;
-        }
-        label {
-            display: block;
-            margin-top: 15px;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        button {
-            margin-top: 20px;
-            width: 100%;
-            padding: 10px;
-            background-color: #00796b;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #004d40;
-        }
-        pre {
-            background: #f1f1f1;
-            padding: 10px;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[ 易經數字 ]</title>
+<style>
+  :root{
+    --bg:#e7fbf8;--card:#ffffff;--text:#0f2a26;--muted:#57736c;--accent:#0f8f86;
+    --border:#cdebe6;--shadow:0 10px 28px rgba(6,107,82,.12);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans TC","PingFang TC","Hiragino Sans","Microsoft JhengHei",Arial,sans-serif}
+  .wrap{max-width:700px;margin:40px auto;padding:0 16px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:16px}
+  h1{margin:0 0 12px;font-size:26px;letter-spacing:.5px;text-align:center;color:#0d6f68}
+  label{display:block;font-size:14px;margin:10px 0 6px;color:var(--muted)}
+  input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:12px;font-size:16px;background:#fbfffe}
+  input:focus{outline:none;box-shadow:0 0 0 3px rgba(15,143,134,.18);border-color:#bfeee5}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  .row>*{flex:1 1 260px}
+  button{padding:12px 16px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer}
+  button:hover{filter:brightness(.95)}
+  .muted{color:var(--muted)}
+  .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--border);background:#f0fbfa;color:#0b3b38;font-size:12px;margin-right:6px}
+  pre{background:#f4fbfa;border:1px solid var(--border);border-radius:12px;padding:12px;white-space:pre-wrap}
+  #result{display:none}
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>[ 易經數字 ]</h1>
-        <label>身分證號：</label>
-        <input type="text" id="idNumber" placeholder="例如 A229156253">
-        <label>出生日期：</label>
-        <input type="date" id="birthDate">
-        <button onclick="calculate()">計算</button>
-        <pre id="result"></pre>
+  <div class="wrap">
+    <div class="card">
+      <h1>[ 易經數字 ]</h1>
+      <div class="row">
+        <div>
+          <label for="idn">身分證號</label>
+          <input id="idn" placeholder="例如 A123456789">
+        </div>
+        <div>
+          <label for="birth">出生日期</label>
+          <input id="birth" type="date">
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button id="go">計算</button>
+        <button id="reset" style="background:#0f2a26">重設</button>
+      </div>
     </div>
 
-    <script>
-        const letterMap = {
-            A: 11, B: 12, C: 13, D: 14, E: 15, F: 16, G: 17, H: 18, I: 19, J: 20,
-            K: 21, L: 22, M: 23, N: 24, O: 25, P: 26, Q: 27, R: 28, S: 29, T: 30,
-            U: 31, V: 32, W: 33, X: 34, Y: 35, Z: 36
-        };
-        const meaningMap = {
-            "11": "伏位", "12": "絕命", "13": "生氣", "14": "天醫",
-            "15": "禍害", "16": "六煞", "17": "延年", "18": "生氣",
-            "19": "天醫", "20": "伏位", "21": "禍害", "22": "伏位",
-            "23": "禍害", "24": "天醫", "25": "絕命", "26": "生氣",
-            "27": "延年", "28": "天醫", "29": "六煞", "30": "伏位",
-            "31": "延年", "32": "生氣", "33": "伏位", "34": "天醫",
-            "35": "絕命", "36": "禍害", "91": "延年", "66": "伏位"
-        };
-        function calculate() {
-            const id = document.getElementById('idNumber').value.trim().toUpperCase();
-            const birth = document.getElementById('birthDate').value;
-            if (!id || !birth) {
-                alert("請輸入身分證號與出生日期");
-                return;
-            }
-            const birthYear = new Date(birth).getFullYear();
-            const age = new Date().getFullYear() - birthYear;
-            let numbers = [];
-            let prevNum = letterMap[id[0]];
-            numbers.push(prevNum);
-            for (let i = 1; i < id.length; i++) {
-                let cur = parseInt(id[i]);
-                if (cur === 0) {
-                    numbers.push(prevNum);
-                } else if (cur === 5) {
-                    numbers.push(parseInt(id[i+1]) ? parseInt(id[i+1]) + prevNum - prevNum + parseInt(id[i+1]) : prevNum);
-                } else {
-                    let numStr = "" + prevNum.toString().slice(-1) + cur;
-                    numbers.push(parseInt(numStr));
-                    prevNum = cur;
-                }
-            }
-            const ageRanges = [
-                [0,10],[10,15],[15,20],[20,25],[25,30],
-                [30,35],[35,40],[40,45],[45,50],[50,70]
-            ];
-            let output = "";
-            ageRanges.forEach((range, idx) => {
-                let val = numbers[idx];
-                output += `${range[0]}-${range[1]}：${val} ${meaningMap[val] || ""}\n`;
-            });
-            let counts = {};
-            numbers.forEach(num => {
-                let meaning = meaningMap[num] || "";
-                if (!counts[meaning]) counts[meaning] = 0;
-                counts[meaning]++;
-            });
-            let mainLife = Object.keys(counts).reduce((a,b)=> counts[a]>counts[b]?a:b);
-            let currentPeriod = ageRanges.findIndex(r => age >= r[0] && age < r[1]);
-            let currentMeaning = meaningMap[numbers[currentPeriod]] || "";
-            output += `\n【排列結果】\n本命：${mainLife}\n流年：${currentMeaning}`;
-            document.getElementById('result').innerText = output;
-        }
-    </script>
+    <div id="result" class="card" style="margin-top:14px">
+      <div id="headline" class="muted"></div>
+      <pre id="out"></pre>
+    </div>
+  </div>
+
+<script>
+// 年齡區間
+const BUCKETS = ["0-10","10-15","15-20","20-25","25-30","30-35","35-40","40-45","45-50","50-70"];
+
+// 兩碼→名稱 對照（依你提供的表）
+const FIELD = {
+  11:"伏位",19:"延年",14:"生氣",13:"天醫",17:"禍害",16:"六煞",12:"絕命",18:"五鬼",
+  22:"伏位",26:"延年",28:"生氣",27:"天醫",23:"禍害",29:"六煞",21:"絕命",24:"五鬼",
+  33:"伏位",34:"延年",39:"生氣",31:"天醫",32:"禍害",38:"六煞",37:"絕命",36:"五鬼",
+  44:"伏位",43:"延年",41:"生氣",49:"天醫",46:"禍害",47:"六煞",48:"絕命",42:"五鬼",
+  66:"伏位",62:"延年",67:"生氣",68:"天醫",64:"禍害",61:"六煞",69:"絕命",63:"五鬼",
+  77:"伏位",78:"延年",76:"生氣",72:"天醫",71:"禍害",74:"六煞",73:"絕命",79:"五鬼",
+  88:"伏位",87:"延年",82:"生氣",86:"天醫",89:"禍害",83:"六煞",84:"絕命",81:"五鬼",
+  99:"伏位",91:"延年",93:"生氣",94:"天醫",98:"禍害",92:"六煞",96:"絕命",97:"五鬼",
+};
+
+// A=11, B=12 … I=19, J=21 …
+function letterTo11(ch){
+  const code = ch.toUpperCase().charCodeAt(0);
+  if(code<65 || code>90) return null;
+  const n = code - 64; // 1..26
+  const tens = Math.floor((n - 1) / 9) + 1; // 1..3
+  const ones = ((n - 1) % 9) + 1;          // 1..9
+  return `${tens}${ones}`;
+}
+
+function calcAge(b){
+  const t = new Date(); const d = new Date(b);
+  let a = t.getFullYear() - d.getFullYear();
+  const m = t.getMonth() - d.getMonth();
+  if(m<0 || (m===0 && t.getDate()<d.getDate())) a--;
+  return a;
+}
+
+function bucketIdx(age){
+  if(age<10) return 0;
+  if(age<15) return 1;
+  if(age<20) return 2;
+  if(age<25) return 3;
+  if(age<30) return 4;
+  if(age<35) return 5;
+  if(age<40) return 6;
+  if(age<45) return 7;
+  if(age<50) return 8;
+  if(age<=70) return 9;
+  return -1;
+}
+
+// 關鍵：建構十組兩碼
+// 規則：
+// 1) 起始：字母→11映射（放入第一組），prevEnd=其個位
+// 2) 依序讀每個數字：
+//    - '0'：輸出 prevEnd+prevEnd；prevEnd 不變
+//    - '5'：輸出 prevEnd + 下一碼（peek，不消耗下一碼）；prevEnd 不變
+//    - '1..9(非5)'：輸出 prevEnd + 該碼；prevEnd=該碼
+function buildPairs(idn){
+  const s = (idn||"").toUpperCase().trim();
+  if(!s) return [];
+  let pairs = [];
+  // 起始：第一字母
+  const p = letterTo11(s[0]);
+  if(!p) return [];
+  pairs.push(p);
+  let prevEnd = p[1];
+
+  for(let i=1; i<s.length && pairs.length<10; i++){
+    const ch = s[i];
+    if(!/[0-9]/.test(ch)) continue;
+    let outSecond = null;
+    if(ch === '0'){
+      outSecond = prevEnd;            // repeat
+      // prevEnd stays
+    }else if(ch === '5'){
+      const next = (i+1<s.length && /[0-9]/.test(s[i+1])) ? s[i+1] : prevEnd;
+      outSecond = next;               // peek next
+      // prevEnd stays; do NOT consume next (自然下輪處理)
+    }else{
+      outSecond = ch;
+      prevEnd = ch;                   // advance
+    }
+    pairs.push(`${prevEnd}${outSecond}`);
+  }
+  // 若不足 10，補重複前碼
+  while(pairs.length<10){
+    pairs.push(`${prevEnd}${prevEnd}`);
+  }
+  return pairs.slice(0,10);
+}
+
+function countMode(arr){
+  const map = new Map();
+  for(const x of arr){ map.set(x,(map.get(x)||0)+1); }
+  let best=null, cnt=-1, pos=arr.length;
+  for(let i=0;i<arr.length;i++){
+    const k = arr[i], c = map.get(k);
+    if(c>cnt || (c===cnt && i<pos)){ best=k; cnt=c; pos=i; }
+  }
+  return best;
+}
+
+document.getElementById('go').addEventListener('click', ()=>{
+  const idn = document.getElementById('idn').value.trim();
+  const birth = document.getElementById('birth').value;
+  if(!idn || !birth){ alert('請輸入身分證號與出生日期'); return; }
+  const pairs = buildPairs(idn);
+  const names = pairs.map(p=> FIELD[p] || "—");
+  const age = calcAge(birth);
+  const bidx = bucketIdx(age);
+  if(bidx===-1){ alert('支援年齡 0–70'); return; }
+  const benming = countMode(names);
+  const liunian = names[bidx];
+
+  // 輸出
+  let txt = "";
+  for(let i=0;i<10;i++){
+    txt += `${BUCKETS[i]}：${pairs[i]}  ${names[i]}\n`;
+  }
+  txt += `\n【排列結果】\n本命：${benming}\n流年：${liunian}`;
+
+  document.getElementById('headline').innerHTML =
+    `<span class="pill">年齡 ${age}</span><span class="pill">區間 ${BUCKETS[bidx]}</span>`;
+  document.getElementById('out').textContent = txt;
+  document.getElementById('result').style.display = 'block';
+});
+
+document.getElementById('reset').addEventListener('click', ()=>{
+  document.getElementById('idn').value='';
+  document.getElementById('birth').value='';
+  document.getElementById('result').style.display='none';
+});
+</script>
 </body>
 </html>

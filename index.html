@@ -54,10 +54,8 @@
   </div>
 
 <script>
-// 年齡區間
 const BUCKETS = ["0-10","10-15","15-20","20-25","25-30","30-35","35-40","40-45","45-50","50-70"];
 
-// 兩碼→名稱 對照（依你提供的表）
 const FIELD = {
   11:"伏位",19:"延年",14:"生氣",13:"天醫",17:"禍害",16:"六煞",12:"絕命",18:"五鬼",
   22:"伏位",26:"延年",28:"生氣",27:"天醫",23:"禍害",29:"六煞",21:"絕命",24:"五鬼",
@@ -69,13 +67,12 @@ const FIELD = {
   99:"伏位",91:"延年",93:"生氣",94:"天醫",98:"禍害",92:"六煞",96:"絕命",97:"五鬼",
 };
 
-// A=11, B=12 … I=19, J=21 …
 function letterTo11(ch){
   const code = ch.toUpperCase().charCodeAt(0);
   if(code<65 || code>90) return null;
-  const n = code - 64; // 1..26
-  const tens = Math.floor((n - 1) / 9) + 1; // 1..3
-  const ones = ((n - 1) % 9) + 1;          // 1..9
+  const n = code - 64;
+  const tens = Math.floor((n - 1) / 9) + 1;
+  const ones = ((n - 1) % 9) + 1;
   return `${tens}${ones}`;
 }
 
@@ -86,7 +83,6 @@ function calcAge(b){
   if(m<0 || (m===0 && t.getDate()<d.getDate())) a--;
   return a;
 }
-
 function bucketIdx(age){
   if(age<10) return 0;
   if(age<15) return 1;
@@ -101,41 +97,32 @@ function bucketIdx(age){
   return -1;
 }
 
-// 關鍵：建構十組兩碼
-// 規則：
-// 1) 起始：字母→11映射（放入第一組），prevEnd=其個位
-// 2) 依序讀每個數字：
-//    - '0'：輸出 prevEnd+prevEnd；prevEnd 不變
-//    - '5'：輸出 prevEnd + 下一碼（peek，不消耗下一碼）；prevEnd 不變
-//    - '1..9(非5)'：輸出 prevEnd + 該碼；prevEnd=該碼
+// 產生十組兩碼：0 重複前碼；5 同化下一碼且「連續兩次」；其他正常連接。
 function buildPairs(idn){
   const s = (idn||"").toUpperCase().trim();
   if(!s) return [];
-  let pairs = [];
-  // 起始：第一字母
-  const p = letterTo11(s[0]);
-  if(!p) return [];
-  pairs.push(p);
+  const p = letterTo11(s[0]); if(!p) return [];
+  let pairs = [p];
   let prevEnd = p[1];
-
   for(let i=1; i<s.length && pairs.length<10; i++){
     const ch = s[i];
     if(!/[0-9]/.test(ch)) continue;
-    let outSecond = null;
-    if(ch === '0'){
-      outSecond = prevEnd;            // repeat
-      // prevEnd stays
-    }else if(ch === '5'){
+    if(ch==='0'){
+      // repeat previous once
+      pairs.push(`${prevEnd}${prevEnd}`);
+      // prevEnd keeps
+    }else if(ch==='5'){
+      // peek next; add the same pair twice
       const next = (i+1<s.length && /[0-9]/.test(s[i+1])) ? s[i+1] : prevEnd;
-      outSecond = next;               // peek next
-      // prevEnd stays; do NOT consume next (自然下輪處理)
+      const pair = `${prevEnd}${next}`;
+      pairs.push(pair);
+      if(pairs.length<10) pairs.push(pair);
+      // prevEnd keeps; next not consumed
     }else{
-      outSecond = ch;
-      prevEnd = ch;                   // advance
+      pairs.push(`${prevEnd}${ch}`);
+      prevEnd = ch;
     }
-    pairs.push(`${prevEnd}${outSecond}`);
   }
-  // 若不足 10，補重複前碼
   while(pairs.length<10){
     pairs.push(`${prevEnd}${prevEnd}`);
   }
@@ -165,7 +152,6 @@ document.getElementById('go').addEventListener('click', ()=>{
   const benming = countMode(names);
   const liunian = names[bidx];
 
-  // 輸出
   let txt = "";
   for(let i=0;i<10;i++){
     txt += `${BUCKETS[i]}：${pairs[i]}  ${names[i]}\n`;

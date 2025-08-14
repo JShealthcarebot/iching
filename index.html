@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>[ 易經數字 ] v3</title>
+<title>[ 易經數字 ] v3.1</title>
 <meta name="theme-color" content="#0f8f86" />
 <style>
   :root{
@@ -37,14 +37,12 @@
   .tab{padding:9px 14px;border:1px solid var(--border);border-radius:999px;cursor:pointer;color:var(--muted);font-weight:700}
   .tab.active{background:var(--accent);color:#fff;border-color:transparent}
   .hide{display:none}
-  /* 表格：固定表頭 + 手機滑動順 */
   .tableWrap{overflow:auto;max-height:60vh;-webkit-overflow-scrolling:touch}
   table{width:100%;border-collapse:collapse;min-width:680px}
   th,td{padding:8px 10px;border-bottom:1px solid var(--border);font-size:15px;vertical-align:top;background:transparent}
   thead th{position:sticky;top:0;background:var(--card);z-index:1}
   tr:nth-child(2n) td{background:color-mix(in oklab, var(--bg) 60%, #fff 40%)}
   .badge{display:inline-block;padding:6px 10px;border-radius:10px;background:color-mix(in oklab, var(--accent) 15%, transparent);border:1px solid var(--border);font-size:12px}
-  /* 小籌碼 */
   .chips{display:inline-flex;gap:6px;flex-wrap:wrap}
   .chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 8px;font-size:12px;color:#fff}
   .chip .dot{width:8px;height:8px;border-radius:50%;background:#fff;opacity:.85}
@@ -102,7 +100,7 @@
         </table>
       </div>
       <div id="adviceID" style="margin-top:10px"></div>
-      <div class="footer">v3</div>
+      <div class="footer">v3.1</div>
     </div>
 
     <!-- 純數字結果 -->
@@ -116,17 +114,17 @@
       </div>
       <div id="summaryNum" style="margin-top:10px"></div>
       <div id="adviceNum" style="margin-top:8px"></div>
-      <div class="footer">v3</div>
+      <div class="footer">v3.1</div>
     </div>
   </div>
 
 <script>
 /* 顯示模式 */
-const SHOW_TRAIT   = true;   // 顯示該命會怎樣（性質/表現）
-const SHOW_HINT    = false;  // 追加理財建議
-const SHOW_REMEDY  = false;  // 追加化解配方（純文字）
+const SHOW_TRAIT   = true;   // 顯示性質/表現
+const SHOW_HINT    = false;  // 顯示理財建議
+const SHOW_REMEDY  = false;  // 顯示化解配方
 
-/* 兩碼→命名 */
+/* 兩碼→命名表 */
 const FIELD={
   11:"伏位",19:"延年",14:"生氣",13:"天醫",17:"禍害",16:"六煞",12:"絕命",18:"五鬼",
   22:"伏位",26:"延年",28:"生氣",27:"天醫",23:"禍害",29:"六煞",21:"絕命",24:"五鬼",
@@ -137,7 +135,19 @@ const FIELD={
   88:"伏位",87:"延年",82:"生氣",86:"天醫",89:"禍害",83:"六煞",84:"絕命",81:"五鬼",
   99:"伏位",91:"延年",93:"生氣",94:"天醫",98:"禍害",92:"六煞",96:"絕命",97:"五鬼",
 };
-/* 理財提示（可與性質分開） */
+/* 反向表：命名→所有標準兩碼（用於「數字：」行） */
+const REVERSE = (() => {
+  const map={};
+  Object.entries(FIELD).forEach(([k,v])=>{
+    (map[v] ||= []).push(+k);
+  });
+  Object.keys(map).forEach(n=>{
+    map[n] = Array.from(new Set(map[n])).sort((a,b)=>a-b);
+  });
+  return map;
+})();
+
+/* 理財/性質/化解 */
 const HINT={
   "伏位":"穩定守成、保守持有、適合定存與長期布局。",
   "延年":"續航、貴人緣佳、適合續抱、逐步加碼。",
@@ -148,9 +158,7 @@ const HINT={
   "絕命":"高風險事件，避免重押、嚴控曝險。",
   "五鬼":"變動莫測，資金分散、保留現金。"
 };
-/* 顏色 class 對應（籌碼用） */
 const COLOR_CLASS={"生氣":"sheng","天醫":"tian","延年":"yan","伏位":"fu","禍害":"huo","絕命":"jue","六煞":"liu","五鬼":"wu"};
-/* 化解配方與性質 */
 const REMEDY={
   "伏位":"增加『生氣＋天醫＋延年』，能啟動伏位的能量。",
   "天醫":"增加『生氣＋延年』，是讓它好上加好的能量。",
@@ -173,10 +181,7 @@ const TRAIT={
 };
 
 /* 小工具 */
-function chip(label){
-  const cls="c-"+(COLOR_CLASS[label]||"fu");
-  return `<span class="chip ${cls}"><span class="dot"></span>${label}</span>`;
-}
+function chip(label){ const cls="c-"+(COLOR_CLASS[label]||"fu"); return `<span class="chip ${cls}"><span class="dot"></span>${label}</span>`; }
 function remedyParts(name){
   const t=REMEDY[name]||""; const m=t.match(/『(.+?)』/);
   return m?m[1].split("＋").map(s=>s.trim()).filter(Boolean):[];
@@ -185,15 +190,16 @@ function chipsForList(container, names){
   const set=new Set(names); names.forEach(n=>remedyParts(n).forEach(p=>set.add(p)));
   container.innerHTML=`<div class="chips">${Array.from(set).map(chip).join("")}</div>`;
 }
+/* 說明：不再附上籌碼，避免重複顯示一列兩顆 */
 function tipHTMLFor(name){
   const trait=TRAIT[name]||"", hint=HINT[name]||"", rem=REMEDY[name]||"";
   let remedyText=""; if(SHOW_REMEDY && rem){ const m=rem.match(/『(.+?)』/); remedyText=m?`　｜ 化解：${m[1]}`:""; }
   const traitPart=SHOW_TRAIT?`${trait}`:"";
   const hintPart =(SHOW_HINT && hint)?`　｜ 理財：${hint}`:"";
-  return `${chip(name)}　${traitPart}${hintPart}${remedyText}`;
+  return `${traitPart}${hintPart}${remedyText}`;
 }
 function letterTo11(ch){ const code=ch.toUpperCase().charCodeAt(0); if(code<65||code>90)return null; const n=code-64; const tens=Math.floor((n-1)/9)+1; const ones=((n-1)%9)+1; return `${tens}${ones}`; }
-/* 規則（B 版）：0=重複前碼；5=同化下一碼（peek，不消耗）；1-9=第二碼且更新 prev；先用舊 prev 組 pair */
+/* B 規則 */
 function buildPairsFromID(idn){
   const s=(idn||"").toUpperCase().trim(); if(!s) return [];
   const p=letterTo11(s[0]); if(!p) return [];
@@ -226,16 +232,6 @@ function calcAge(b){const t=new Date();const d=new Date(b);let a=t.getFullYear()
 function bucketIdx(age){if(age<10)return 0;if(age<15)return 1;if(age<20)return 2;if(age<25)return 3;if(age<30)return 4;if(age<35)return 5;if(age<40)return 6;if(age<45)return 7;if(age<50)return 8;if(age<=70)return 9;return -1;}
 const BUCKETS=["0-10","10-15","15-20","20-25","25-30","30-35","35-40","40-45","45-50","50-70"];
 
-/* 將兩碼依命名分組：{ 生氣:[67,…], 延年:[34,…] } */
-function groupPairNumbersByName(names, pairs){
-  const map = {};
-  for(let i=0;i<names.length;i++){
-    const key = names[i];
-    (map[key] ||= []).push(pairs[i]);
-  }
-  return map;
-}
-
 /* === 身分證＋生日 === */
 document.getElementById('go').addEventListener('click', ()=>{
   const idn=document.getElementById('idn').value.trim();
@@ -259,11 +255,10 @@ document.getElementById('go').addEventListener('click', ()=>{
     tbodyID.appendChild(tr);
   }
 
-  // 建議 + 數字清單
+  // 建議（用化解配方推導）＋ 對應全量標準兩碼
   const remedySet=new Set(); names.forEach(n=>remedyParts(n).forEach(p=>remedySet.add(p)));
   const recList = Array.from(remedySet);
-  const byName = groupPairNumbersByName(names, pairs);
-  const numsLine = recList.map(n => `${n}（${(byName[n]||[]).join("、") || "—"}）`).join("　");
+  const numsLine = recList.map(n => `${n}（${(REVERSE[n]||[]).join("、") || "—"}）`).join("　");
 
   document.getElementById('adviceID').innerHTML =
     `<div class="muted">建議：${recList.join("、") || "—"}</div>
@@ -301,11 +296,10 @@ document.getElementById('goNum').addEventListener('click', ()=>{
   document.getElementById('summaryNum').innerHTML =
     `<span class="muted">${SHOW_HINT?HINT[main]:""}</span><div class="muted" style="margin-top:6px">分佈：${countStr}</div>`;
 
-  // 建議 + 數字清單
+  // 建議（由化解配方）＋ 對應全量標準兩碼
   const remedySet=new Set(); names.forEach(n=>remedyParts(n).forEach(p=>remedySet.add(p)));
   const recList = Array.from(remedySet);
-  const byName = groupPairNumbersByName(names, allPairs);
-  const numsLine = recList.map(n => `${n}（${(byName[n]||[]).join("、") || "—"}）`).join("　");
+  const numsLine = recList.map(n => `${n}（${(REVERSE[n]||[]).join("、") || "—"}）`).join("　");
 
   document.getElementById('adviceNum').innerHTML =
     `<div class="muted">建議：${recList.join("、") || "—"}</div>

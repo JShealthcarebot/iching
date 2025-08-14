@@ -1,33 +1,21 @@
-```html
 <!doctype html>
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>[ 易經數字 ] v3.9</title>
-<link rel="icon" type="image/svg+xml" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="%23fff" stroke="%23000" stroke-width="4"/><path d="M50 2 A48 48 0 0 0 50 98 A24 24 0 0 0 50 50 A24 24 0 0 0 50 2z" fill="%23000"/><circle cx="50" cy="26" r="8" fill="%23fff"/><circle cx="50" cy="74" r="8" fill="%23000"/></svg>'>
+<title>[ 易經數字 ]</title>
 <meta name="theme-color" content="#0f8f86" />
 <style>
   :root{
     --bg:#e9fbf8;--card:#fff;--text:#0f2a26;--muted:#5e7b75;--accent:#0f8f86;
     --border:#cdebe6;--shadow:0 10px 28px rgba(6,107,82,.12);
-    /* 色票（依你指定） */
-    --c-sheng:#16a34a;  /* 生氣：綠 */
-    --c-tian:#0ea5b7;   /* 天醫：藍青 */
-    --c-yan:#7c3aed;    /* 延年：紫 */
-    --c-fu:#6b7280;     /* 伏位：灰 */
-    --c-huo:#d97706;    /* 禍害：橙 */
-    --c-jue:#ef4444;    /* 絕命：紅 */
-    --c-liu:#f472b6;    /* 六煞：粉 */
-    --c-wu:#111827;     /* 五鬼：黑 */
+    --c-sheng:#16a34a;--c-tian:#0ea5b7;--c-yan:#7c3aed;--c-fu:#6b7280;
+    --c-huo:#d97706;--c-jue:#ef4444;--c-liu:#f472b6;--c-wu:#111827;
   }
   .dark{--bg:#0b1413;--card:#0f1c1a;--text:#e6fffb;--muted:#8ec1b8;--accent:#23b6af;--border:#143230;--shadow:0 10px 28px rgba(0,0,0,.35)}
   *{box-sizing:border-box}
-  body{
-    margin:0;background:var(--bg);color:var(--text);
-    font-family:"Inter","Noto Sans TC","PingFang TC","Hiragino Sans","Microsoft JhengHei",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-    line-height:1.6;letter-spacing:.2px;
-  }
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:"Inter","Noto Sans TC","PingFang TC","Hiragino Sans","Microsoft JhengHei",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.6;letter-spacing:.2px}
   .wrap{max-width:980px;margin:34px auto;padding:0 16px}
   .card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);padding:18px}
   h1{margin:6px 0 12px;font-size:28px;letter-spacing:1px;text-align:center;color:var(--accent);font-weight:800}
@@ -49,26 +37,19 @@
   .tab{padding:9px 14px;border:1px solid var(--border);border-radius:999px;cursor:pointer;color:var(--muted);font-weight:700}
   .tab.active{background:var(--accent);color:#fff;border-color:transparent}
   .hide{display:none}
-  /* 表格 */
+  /* 表格：固定表頭 + 手機滑動順 */
   .tableWrap{overflow:auto;max-height:60vh;-webkit-overflow-scrolling:touch}
   table{width:100%;border-collapse:collapse;min-width:680px}
   th,td{padding:8px 10px;border-bottom:1px solid var(--border);font-size:15px;vertical-align:top;background:transparent}
   thead th{position:sticky;top:0;background:var(--card);z-index:1}
   tr:nth-child(2n) td{background:color-mix(in oklab, var(--bg) 60%, #fff 40%)}
   .badge{display:inline-block;padding:6px 10px;border-radius:10px;background:color-mix(in oklab, var(--accent) 15%, transparent);border:1px solid var(--border);font-size:12px}
-  details{border:1px dashed var(--border);border-radius:12px;padding:10px;margin-top:10px}
-  details>summary{cursor:pointer;color:var(--muted);font-weight:700}
-  /* 彩色籌碼與色條 */
+  /* 小籌碼 */
   .chips{display:inline-flex;gap:6px;flex-wrap:wrap}
   .chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 8px;font-size:12px;color:#fff}
   .chip .dot{width:8px;height:8px;border-radius:50%;background:#fff;opacity:.85}
   .c-sheng{background:var(--c-sheng)} .c-tian{background:var(--c-tian)} .c-yan{background:var(--c-yan)} .c-fu{background:var(--c-fu)}
   .c-huo{background:var(--c-huo)} .c-jue{background:var(--c-jue)} .c-liu{background:var(--c-liu)} .c-wu{background:var(--c-wu)}
-  .combo{display:inline-flex;gap:4px;margin-left:8px}
-  .box{width:14px;height:14px;border-radius:3px}
-  .b-sheng{background:var(--c-sheng)} .b-tian{background:var(--c-tian)} .b-yan{background:var(--c-yan)} .b-fu{background:var(--c-fu)}
-  .b-huo{background:var(--c-huo)} .b-jue{background:var(--c-jue)} .b-liu{background:var(--c-liu)} .b-wu{background:var(--c-wu)}
-  .tip{opacity:.85}
 </style>
 </head>
 <body>
@@ -97,7 +78,7 @@
         </div>
       </div>
 
-      <!-- 純數字：自動以第一碼起始，全長推算 -->
+      <!-- 純數字 -->
       <div id="paneNum" class="hide">
         <div class="row">
           <div><label for="numStr">純數字</label><input id="numStr" placeholder="例如 11220587476 或更長的序列" /></div>
@@ -109,46 +90,39 @@
       </div>
     </div>
 
-    <!-- ID 結果：新增表格 + 色條提示 -->
-    <div id="result" class="card" style="margin-top:14px">
+    <!-- ID 結果 -->
+    <div id="result" class="card" style="margin-top:14px;display:none">
       <div id="headline" class="muted"></div>
       <div id="chipsID" style="margin:6px 0"></div>
-
       <div class="tableWrap" id="tableWrapID" style="margin-top:8px">
         <table>
-          <thead><tr><th style="width:110px">年齡區間</th><th style="width:80px">兩碼</th><th style="width:120px">命名</th><th>提示</th></tr></thead>
+          <thead><tr><th style="width:110px">年齡區間</th><th style="width:80px">兩碼</th><th style="width:120px">命名</th><th>說明</th></tr></thead>
           <tbody id="tbodyID"></tbody>
         </table>
       </div>
-
-      <pre id="out" style="font-size:15px;display:none"></pre>
-
       <div id="adviceID" style="margin-top:10px"></div>
-      <details>
-        <summary>磁場化解與特色（說明）</summary>
-        <div id="legend"></div>
-      </details>
     </div>
 
     <!-- 純數字結果 -->
-    <div id="resultNum" class="card" style="margin-top:14px">
+    <div id="resultNum" class="card" style="margin-top:14px;display:none">
       <div id="headlineNum" class="muted"></div>
       <div class="tableWrap" id="tableWrapNum" style="margin-top:8px">
         <table>
-          <thead><tr><th style="width:70px">段次</th><th style="width:80px">兩碼</th><th style="width:120px">命名</th><th>提示</th></tr></thead>
+          <thead><tr><th style="width:70px">段次</th><th style="width:80px">兩碼</th><th style="width:120px">命名</th><th>說明</th></tr></thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
       <div id="summaryNum" style="margin-top:10px"></div>
       <div id="adviceNum" style="margin-top:8px"></div>
-      <details>
-        <summary>磁場化解與特色（說明）</summary>
-        <div id="legend2"></div>
-      </details>
     </div>
   </div>
 
 <script>
+/* 顯示模式 */
+const SHOW_TRAIT   = true;   // 顯示該命會怎樣（性質/表現）
+const SHOW_HINT    = false;  // 追加理財建議
+const SHOW_REMEDY  = false;  // 追加化解配方（純文字）
+
 /* 兩碼→命名 */
 const FIELD={
   11:"伏位",19:"延年",14:"生氣",13:"天醫",17:"禍害",16:"六煞",12:"絕命",18:"五鬼",
@@ -160,19 +134,20 @@ const FIELD={
   88:"伏位",87:"延年",82:"生氣",86:"天醫",89:"禍害",83:"六煞",84:"絕命",81:"五鬼",
   99:"伏位",91:"延年",93:"生氣",94:"天醫",98:"禍害",92:"六煞",96:"絕命",97:"五鬼",
 };
+/* 理財提示（可與性質分開） */
 const HINT={
   "伏位":"穩定守成、保守持有、適合定存與長期布局。",
-  "延年":"續航運、貴人緣佳、適合續抱、逐步加碼。",
-  "生氣":"轉機與動能、適合增持或趁勢切入。",
+  "延年":"續航、貴人緣佳、適合續抱、逐步加碼。",
+  "生氣":"轉機動能，適合增持或趁勢切入。",
   "天醫":"智慧與資源、學習研究、配置優化。",
-  "禍害":"雜訊與干擾、遠離人我紛爭、降低槓桿。",
-  "六煞":"波動與衝突、控管風險、短線保守。",
-  "絕命":"高風險事件、避免重押、嚴控曝險。",
-  "五鬼":"變動莫測、資金分散、保留現金彈性。"
+  "禍害":"雜訊干擾，降低槓桿、遠離紛爭。",
+  "六煞":"波動衝突，控管風險、短線保守。",
+  "絕命":"高風險事件，避免重押、嚴控曝險。",
+  "五鬼":"變動莫測，資金分散、保留現金。"
 };
-/* 顏色 class 對應 */
+/* 顏色 class 對應（籌碼用） */
 const COLOR_CLASS={"生氣":"sheng","天醫":"tian","延年":"yan","伏位":"fu","禍害":"huo","絕命":"jue","六煞":"liu","五鬼":"wu"};
-/* 化解配方 */
+/* 化解配方與性質 */
 const REMEDY={
   "伏位":"增加『生氣＋天醫＋延年』，能啟動伏位的能量。",
   "天醫":"增加『生氣＋延年』，是讓它好上加好的能量。",
@@ -180,59 +155,42 @@ const REMEDY={
   "延年":"增加『生氣＋天醫』，是最有力量的組合狀態。",
   "六煞":"增加『延年』，才能壓制負面能量並帶動正面能量。",
   "絕命":"增加『天醫』，才能破解負面能量並帶動正面能量。",
-  "禍害":"增加『生氣＋延年』或『生氣＋伏位』（順序可變）才能化解負面能量並帶動正面能量。",
-  "五鬼":"同時具有『生氣＋天醫＋延年』（順序不可錯）才能化解負面能量並帶動正面能量。"
+  "禍害":"增加『生氣＋延年』或『生氣＋伏位』才能化解負面能量並帶動正面能量。",
+  "五鬼":"同時具有『生氣＋天醫＋延年』才能化解負面能量並帶動正面能量。"
 };
-/* 特色 */
 const TRAIT={
-  "生氣":"代表貴人、轉機與新生。個性隨緣、開朗、直率、純真，人脈常有意外收穫，熱心常得回報。",
-  "天醫":"代表無窮傳承力量與延伸可能。天性單純、無私、博愛，懂得關懷與幫助他人，追求心靈純淨。",
-  "延年":"代表『權力』與承壓。獨立自主，易成為領導者與精神指標。",
-  "伏位":"謹慎保守、穩定顧家、蓄勢待發；但易懶散拖延而停滯，需把握時機。",
-  "禍害":"代表『口』與表達。口能救人亦能傷人，保持謙卑方能看清事物原貌。",
-  "絕命":"大起大落、關鍵決斷型：「只准成功，不許失敗」。下定決心後行動果決。",
-  "六煞":"人際與外交手腕佳，對女性緣分強；鋒芒太露易遭忌妒，需收斂避免無妄之災。",
-  "五鬼":"反轉、鬼才、特立獨行；在不安定時易多疑緊張，注意情緒與身心健康。"
+  "生氣":"代表貴人、轉機與新生。個性隨緣、開朗、直率、純真，人脈常有意外收穫。",
+  "天醫":"無窮傳承力量與延伸可能。單純無私、懂得關懷與幫助，追求心靈純淨。",
+  "延年":"象徵權力與續航，承壓能力強，易成為領導者與精神指標。",
+  "伏位":"謹慎保守、穩定顧家、蓄勢待發；易因拖延而停滯，需要把握時機。",
+  "禍害":"屬於『口』的能量，善表達也需謙卑，避免口舌是非。",
+  "絕命":"大起大落型，關鍵決斷：「只准成功，不許失敗」。行動果決。",
+  "六煞":"人際外交手腕佳，鋒芒太露易招忌妒，需收斂避免無妄之災。",
+  "五鬼":"反轉與特立獨行，環境不穩時易多疑緊張，注意情緒與身心健康。"
 };
 
-/* UI 小工具 */
-function chip(label){
-  const cls = "c-"+(COLOR_CLASS[label]||"fu");
-  return `<span class="chip ${cls}" title="${label}"><span class="dot"></span>${label}</span>`;
-}
-function comboBoxes(text){ // 從『A＋B＋C』抽出色條
-  const m = text.match(/『(.+?)』/); if(!m){return "";}
-  const names = m[1].split("＋").map(s=>s.trim()).filter(Boolean);
-  const box = (name)=>`<span class="box b-${COLOR_CLASS[name]||"fu"}" title="${name}"></span>`;
-  return `<span class="combo">${names.map(box).join("")}</span>`;
-}
-function renderLegend(el){
-  const order=["生氣","天醫","延年","伏位","禍害","六煞","絕命","五鬼"];
-  el.innerHTML = order.map(k=>(
-    `<div style="margin:.35rem 0">${chip(k)} ${comboBoxes(REMEDY[k]||"")}
-      <div class="muted tip" style="margin:.2rem 0 0 28px">${REMEDY[k]||""}</div>
-      <div style="margin-left:28px">${TRAIT[k]||""}</div></div>`
-  )).join("");
-}
+/* 小工具 */
+function chip(label){ const cls="c-"+(COLOR_CLASS[label]||"fu"); return `<span class="chip ${cls}"><span class="dot"></span>${label}</span>`; }
+function remedyParts(name){ const t=REMEDY[name]||""; const m=t.match(/『(.+?)』/); return m?m[1].split("＋").map(s=>s.trim()).filter(Boolean):[]; }
 function chipsForList(container, names){
-  const uniq = Array.from(new Set(names));
-  container.innerHTML = `<div class="chips">${uniq.map(chip).join("")}</div>`;
+  const set=new Set(names); names.forEach(n=>remedyParts(n).forEach(p=>set.add(p)));
+  container.innerHTML=`<div class="chips">${Array.from(set).map(chip).join("")}</div>`;
+}
+function tipHTMLFor(name){
+  const trait=TRAIT[name]||"", hint=HINT[name]||"", rem=REMEDY[name]||"";
+  let remedyText=""; if(SHOW_REMEDY && rem){ const m=rem.match(/『(.+?)』/); remedyText=m?`　｜ 化解：${m[1]}`:""; }
+  const traitPart=SHOW_TRAIT?`${trait}`:"";
+  const hintPart =(SHOW_HINT && hint)?`　｜ 理財：${hint}`:"";
+  return `<span class="badge">${name}</span>　${traitPart}${hintPart}${remedyText}`;
 }
 
-/* A→11 對照 */
-function letterTo11(ch){
-  const code = ch.toUpperCase().charCodeAt(0);
-  if(code < 65 || code > 90) return null;
-  const n = code - 64;
-  const tens = Math.floor((n-1)/9)+1;
-  const ones = ((n-1)%9)+1;
-  return `${tens}${ones}`;
-}
+/* A→11 */
+function letterTo11(ch){ const code=ch.toUpperCase().charCodeAt(0); if(code<65||code>90)return null; const n=code-64; const tens=Math.floor((n-1)/9)+1; const ones=((n-1)%9)+1; return `${tens}${ones}`; }
 
 /* 規則（B 版）：0=重複前碼；5=同化下一碼（peek，不消耗）；1-9=第二碼且更新 prev；先用舊 prev 組 pair */
 function buildPairsFromID(idn){
-  const s = (idn||"").toUpperCase().trim(); if(!s) return [];
-  const p = letterTo11(s[0]); if(!p) return [];
+  const s=(idn||"").toUpperCase().trim(); if(!s) return [];
+  const p=letterTo11(s[0]); if(!p) return [];
   let pairs=[p]; let prev=p[1];
   for(let i=1;i<s.length;i++){
     const ch=s[i]; if(!/[0-9]/.test(ch)) continue;
@@ -246,8 +204,7 @@ function buildPairsFromID(idn){
 }
 function buildPairsFromNumber(numStr){
   const s=(numStr||"").replace(/\D+/g,""); if(!s) return [];
-  const MAX=5000; let pairs=[]; let prev=s[0];
-  pairs.push(`${prev}${prev}`);
+  const MAX=5000; let pairs=[]; let prev=s[0]; pairs.push(`${prev}${prev}`);
   for(let i=1;i<s.length && pairs.length<MAX;i++){
     const ch=s[i]; const oldPrev=prev; let second;
     if(ch==='0'){ second=oldPrev; }
@@ -257,18 +214,13 @@ function buildPairsFromNumber(numStr){
   }
   return pairs;
 }
-function countMode(arr){
-  const map=new Map(); for(const x of arr){ map.set(x,(map.get(x)||0)+1); }
-  let best=null,cnt=-1,pos=arr.length;
-  for(let i=0;i<arr.length;i++){ const k=arr[i],c=map.get(k);
-    if(c>cnt || (c===cnt && i<pos)){ best=k; cnt=c; pos=i; }
-  }
-  return best;
-}
+function countMode(arr){ const map=new Map(); for(const x of arr){ map.set(x,(map.get(x)||0)+1); }
+  let best=null,cnt=-1,pos=arr.length; for(let i=0;i<arr.length;i++){ const k=arr[i],c=map.get(k); if(c>cnt||(c===cnt&&i<pos)){best=k;cnt=c;pos=i;} } return best; }
 
-/* 年齡與區間（ID+生日用，固定 10 段） */
+/* 年齡／區間 */
 function calcAge(b){const t=new Date();const d=new Date(b);let a=t.getFullYear()-d.getFullYear();const m=t.getMonth()-d.getMonth();if(m<0||(m===0&&t.getDate()<d.getDate()))a--;return a;}
 function bucketIdx(age){if(age<10)return 0;if(age<15)return 1;if(age<20)return 2;if(age<25)return 3;if(age<30)return 4;if(age<35)return 5;if(age<40)return 6;if(age<45)return 7;if(age<50)return 8;if(age<=70)return 9;return -1;}
+const BUCKETS=["0-10","10-15","15-20","20-25","25-30","30-35","35-40","40-45","45-50","50-70"];
 
 /* === 身分證＋生日 === */
 document.getElementById('go').addEventListener('click', ()=>{
@@ -277,30 +229,27 @@ document.getElementById('go').addEventListener('click', ()=>{
   if(!idn||!birth){ alert('請輸入身分證號與出生日期'); return; }
   const allPairs=buildPairsFromID(idn);
   const pairs=(allPairs.length>=10)?allPairs.slice(0,10):[...allPairs,...Array(10-allPairs.length).fill(allPairs.at(-1)||"11")];
-  const BUCKETS=["0-10","10-15","15-20","20-25","25-30","30-35","35-40","40-45","45-50","50-70"];
   const names=pairs.map(p=>FIELD[p]||"—");
   const age=calcAge(birth); const bidx=bucketIdx(age); if(bidx===-1){alert('支援年齡 0–70');return;}
   const benming=countMode(names); const liunian=names[bidx];
 
-  document.getElementById('headline').innerHTML = `<span class="pill">年齡 ${age}</span><span class="pill">區間 ${BUCKETS[bidx]}</span>　<span class="pill">本命 ${benming}</span><span class="pill">流年 ${liunian}</span>`;
+  document.getElementById('headline').innerHTML =
+    `<span class="pill">年齡 ${age}</span><span class="pill">區間 ${BUCKETS[bidx]}</span>　<span class="pill">本命 ${benming}</span><span class="pill">流年 ${liunian}</span>`;
   chipsForList(document.getElementById('chipsID'), names);
 
-  // 新：把 10 段顯示成表格 + 色條提示
   const tbodyID=document.getElementById('tbodyID'); tbodyID.innerHTML="";
   for(let i=0;i<10;i++){
-    const pair=pairs[i], name=names[i], remedy=REMEDY[name]||"";
-    const tipHTML = `${chip(name)} ${comboBoxes(remedy)} <span class="muted tip" title="${remedy}">${remedy.replace(/『|』/g,'')}</span>`;
+    const pair=pairs[i], name=names[i];
     const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${BUCKETS[i]}</td><td>${pair}</td><td>${name}</td><td>${tipHTML}</td>`;
+    tr.innerHTML = `<td>${BUCKETS[i]}</td><td>${pair}</td><td>${name}</td><td>${tipHTMLFor(name)}</td>`;
     tbodyID.appendChild(tr);
   }
 
-  // 化解建議總覽（依本次出現的類型）
-  const uniq = Array.from(new Set(names));
+  // 化解建議總覽（簡約：列出本次涉及的化解成分）
+  const remedySet=new Set(); names.forEach(n=>remedyParts(n).forEach(p=>remedySet.add(p)));
   document.getElementById('adviceID').innerHTML =
-    `<div class="chips">${uniq.map(n => chip(n) + comboBoxes(REMEDY[n]||"")).join("")}</div>`;
+    `<div class="muted">建議：${Array.from(remedySet).join("、") || "—"}</div>`;
 
-  renderLegend(document.getElementById('legend'));
   document.getElementById('result').style.display='block';
   document.getElementById('resultNum').style.display='none';
 });
@@ -319,10 +268,8 @@ document.getElementById('goNum').addEventListener('click', ()=>{
 
   const tbody=document.getElementById('tbody'); tbody.innerHTML="";
   for(let i=0;i<allPairs.length;i++){
-    const n=names[i], remedy=REMEDY[n]||"";
-    const tipHTML = `${chip(n)} ${comboBoxes(remedy)} <span class="muted tip" title="${remedy}">${remedy.replace(/『|』/g,'')}</span>`;
-    const tr=document.createElement('tr');
-    tr.innerHTML = `<td>第${i+1}段</td><td>${allPairs[i]}</td><td>${n}</td><td>${tipHTML}</td>`;
+    const n=names[i], tr=document.createElement('tr');
+    tr.innerHTML = `<td>第${i+1}段</td><td>${allPairs[i]}</td><td>${n}</td><td>${tipHTMLFor(n)}</td>`;
     tbody.appendChild(tr);
   }
 
@@ -333,11 +280,12 @@ document.getElementById('goNum').addEventListener('click', ()=>{
   document.getElementById('headlineNum').innerHTML =
     `<span class="pill">純數字推算</span> <span class="muted">總段數 ${total}</span>　<span class="pill">主命 ${main}</span>`;
   document.getElementById('summaryNum').innerHTML =
-    `<span class="muted">${HINT[main]||""}</span><div class="muted" style="margin-top:6px">分佈：${countStr}</div>`;
-  document.getElementById('adviceNum').innerHTML =
-    `<div class="chips">${Array.from(new Set(names)).map(n => chip(n) + comboBoxes(REMEDY[n]||"")).join("")}</div>`;
+    `<span class="muted">${SHOW_HINT?HINT[main]:""}</span><div class="muted" style="margin-top:6px">分佈：${countStr}</div>`;
 
-  renderLegend(document.getElementById('legend2'));
+  const remedySet=new Set(); names.forEach(n=>remedyParts(n).forEach(p=>remedySet.add(p)));
+  document.getElementById('adviceNum').innerHTML =
+    `<div class="muted">建議：${Array.from(remedySet).join("、") || "—"}</div>`;
+
   document.getElementById('resultNum').style.display='block';
   document.getElementById('result').style.display='none';
 });
@@ -349,29 +297,16 @@ document.getElementById('resetNum').addEventListener('click',()=>{
 /* Tabs + Theme */
 const tabID=document.getElementById('tabID'), tabNum=document.getElementById('tabNum'), paneID=document.getElementById('paneID'), paneNum=document.getElementById('paneNum');
 function setTab(which){
-  if(which==='id'){
-    tabID.classList.add('active');tabNum.classList.remove('active');
-    paneID.classList.remove('hide');paneNum.classList.add('hide');
-    document.getElementById('resultNum').style.display='none';
-  }else{
-    tabID.classList.remove('active');tabNum.classList.add('active');
-    paneID.classList.add('hide');paneNum.classList.remove('hide');
-    document.getElementById('result').style.display='none';
-  }
+  if(which==='id'){ tabID.classList.add('active');tabNum.classList.remove('active');paneID.classList.remove('hide');paneNum.classList.add('hide');document.getElementById('resultNum').style.display='none'; }
+  else{ tabID.classList.remove('active');tabNum.classList.add('active');paneID.classList.add('hide');paneNum.classList.remove('hide');document.getElementById('result').style.display='none'; }
 }
 tabID.addEventListener('click',()=>setTab('id'));
 tabNum.addEventListener('click',()=>setTab('num'));
 
 const labelEl=document.getElementById('themeLabel'); const switchEl=document.getElementById('themeSwitch');
-function setTheme(mode){
-  if(mode==='dark'){ document.body.classList.add('dark'); labelEl.textContent='黑色主題'; }
-  else{ document.body.classList.remove('dark'); labelEl.textContent='湖水綠'; }
-  localStorage.setItem('iching_theme',mode);
-}
+function setTheme(mode){ if(mode==='dark'){document.body.classList.add('dark');labelEl.textContent='黑色主題';} else{document.body.classList.remove('dark');labelEl.textContent='湖水綠';} localStorage.setItem('iching_theme',mode); }
 setTheme(localStorage.getItem('iching_theme')||'light');
 switchEl.addEventListener('click',()=>{ const now=document.body.classList.contains('dark')?'light':'dark'; setTheme(now); });
 </script>
 </body>
 </html>
-```
-

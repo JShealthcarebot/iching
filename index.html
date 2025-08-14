@@ -47,8 +47,9 @@
   .chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 8px;font-size:12px;color:#fff}
   .chip .dot{width:8px;height:8px;border-radius:50%;background:#fff;opacity:.85}
   .c-sheng{background:var(--c-sheng)} .c-tian{background:var(--c-tian)} .c-yan{background:var(--c-yan)} .c-fu{background:var(--c-fu)}
-  .c-huo{背景:var(--c-huo)} .c-jue{background:var(--c-jue)} .c-liu{background:var(--c-liu)} .c-wu{background:var(--c-wu)}
+  .c-huo{background:var(--c-huo)} .c-jue{background:var(--c-jue)} .c-liu{background:var(--c-liu)} .c-wu{background:var(--c-wu)}
   .footer{margin-top:6px;font-size:12px;text-align:right;color:var(--muted)}
+  /* 統計條 */
   .statRow{display:flex;align-items:center;gap:8px;margin:6px 0}
   .statBar{flex:1;height:10px;border-radius:999px;background:var(--border);overflow:hidden}
   .statBar i{display:block;height:100%}
@@ -68,6 +69,7 @@
         <div id="tabNum" class="tab">純數字</div>
       </div>
 
+      <!-- 身分證＋生日 -->
       <div id="paneID">
         <div class="row">
           <div><label for="idn">身分證號</label><input id="idn" placeholder="例如 A123456789" /></div>
@@ -79,6 +81,7 @@
         </div>
       </div>
 
+      <!-- 純數字 -->
       <div id="paneNum" class="hide">
         <div class="row">
           <div><label for="numStr">純數字</label><input id="numStr" placeholder="例如 11220587476 或更長的序列" /></div>
@@ -90,6 +93,7 @@
       </div>
     </div>
 
+    <!-- ID 結果 -->
     <div id="result" class="card" style="margin-top:14px;display:none">
       <div id="headline" class="muted"></div>
       <div id="chipsID" style="margin:6px 0"></div>
@@ -104,6 +108,7 @@
       <div class="footer">v3.2</div>
     </div>
 
+    <!-- 純數字結果 -->
     <div id="resultNum" class="card" style="margin-top:14px;display:none">
       <div id="headlineNum" class="muted"></div>
       <div class="tableWrap" id="tableWrapNum" style="margin-top:8px">
@@ -120,8 +125,12 @@
   </div>
 
 <script>
-const SHOW_TRAIT=true,SHOW_HINT=false,SHOW_REMEDY=false;
+/* 顯示模式 */
+const SHOW_TRAIT   = true;   // 顯示性質/表現
+const SHOW_HINT    = false;  // 顯示理財建議
+const SHOW_REMEDY  = false;  // 顯示化解配方
 
+/* 兩碼→命名（八宅表） */
 const FIELD={
   11:"伏位",19:"延年",14:"生氣",13:"天醫",17:"禍害",16:"六煞",12:"絕命",18:"五鬼",
   22:"伏位",26:"延年",28:"生氣",27:"天醫",23:"禍害",29:"六煞",21:"絕命",24:"五鬼",
@@ -132,14 +141,15 @@ const FIELD={
   88:"伏位",87:"延年",82:"生氣",86:"天醫",89:"禍害",83:"六煞",84:"絕命",81:"五鬼",
   99:"伏位",91:"延年",93:"生氣",94:"天醫",98:"禍害",92:"六煞",96:"絕命",97:"五鬼",
 };
-
-const REVERSE=(()=>{
+/* 命名→全部標準兩碼（用於「數字：」行） */
+const REVERSE = (() => {
   const map={};
-  Object.entries(FIELD).forEach(([k,v])=>{(map[v]??=[]).push(+k);});
-  Object.keys(map).forEach(n=>{map[n]=Array.from(new Set(map[n])).sort((a,b)=>a-b);});
+  Object.entries(FIELD).forEach(([k,v])=>{ (map[v] ||= []).push(+k); });
+  Object.keys(map).forEach(n=>{ map[n] = Array.from(new Set(map[n])).sort((a,b)=>a-b); });
   return map;
 })();
 
+/* 文案 */
 const HINT={
   "伏位":"穩定守成、保守持有、適合定存與長期布局。",
   "延年":"續航、貴人緣佳、適合續抱、逐步加碼。",
@@ -172,12 +182,20 @@ const TRAIT={
   "五鬼":"反轉與特立獨行，環境不穩時易多疑緊張，注意情緒與身心健康。"
 };
 
-function chip(label){const cls="c-"+(COLOR_CLASS[label]||"fu");return `<span class="chip ${cls}"><span class="dot"></span>${label}</span>`;}
-function remedyParts(name){const t=REMEDY[name]||"";const m=t.match(/『(.+?)』/);return m?m[1].split("＋").map(s=>s.trim()).filter(Boolean):[];}
-function chipsForList(container,names){const set=new Set(names);names.forEach(n=>remedyParts(n).forEach(p=>set.add(p)));container.innerHTML=`<div class="chips">${Array.from(set).map(chip).join("")}</div>`;}
-function tipHTMLFor(name){const trait=TRAIT[name]||"",hint=HINT[name]||"",rem=REMEDY[name]||"";let remedyText="";if(SHOW_REMEDY&&rem){const m=rem.match(/『(.+?)』/);remedyText=m?`　｜ 化解：${m[1]}`:"";}const traitPart=SHOW_TRAIT?`${trait}`:"";const hintPart=(SHOW_HINT&&hint)?`　｜ 理財：${hint}`:"";return `${traitPart}${hintPart}${remedyText}`;}
-function letterTo11(ch){const code=ch.toUpperCase().charCodeAt(0);if(code<65||code>90)return null;const n=code-64;const tens=Math.floor((n-1)/9)+1;const ones=((n-1)%9)+1;return `${tens}${ones}`;}
+/* 工具 */
+function chip(label){ const cls="c-"+(COLOR_CLASS[label]||"fu"); return `<span class="chip ${cls}"><span class="dot"></span>${label}</span>`; }
+function remedyParts(name){ const t=REMEDY[name]||""; const m=t.match(/『(.+?)』/); return m?m[1].split("＋").map(s=>s.trim()).filter(Boolean):[]; }
+function chipsForList(container, names){ const set=new Set(names); names.forEach(n=>remedyParts(n).forEach(p=>set.add(p))); container.innerHTML=`<div class="chips">${Array.from(set).map(chip).join("")}</div>`; }
+function tipHTMLFor(name){
+  const trait=TRAIT[name]||"", hint=HINT[name]||"", rem=REMEDY[name]||"";
+  let remedyText=""; if(SHOW_REMEDY && rem){ const m=rem.match(/『(.+?)』/); remedyText=m?`　｜ 化解：${m[1]}`:""; }
+  const traitPart=SHOW_TRAIT?`${trait}`:"";
+  const hintPart =(SHOW_HINT && hint)?`　｜ 理財：${hint}`:"";
+  return `${traitPart}${hintPart}${remedyText}`;
+}
+function letterTo11(ch){ const code=ch.toUpperCase().charCodeAt(0); if(code<65||code>90)return null; const n=code-64; const tens=Math.floor((n-1)/9)+1; const ones=((n-1)%9)+1; return `${tens}${ones}`; }
 
+/* 規則（B 版）：0=重複前碼；5=同化下一碼（peek，不吃下一碼） */
 function buildPairsFromID(idn){
   const s=(idn||"").toUpperCase().trim(); if(!s) return [];
   const p=letterTo11(s[0]); if(!p) return [];
@@ -204,128 +222,177 @@ function buildPairsFromNumber(numStr){
   }
   return pairs;
 }
-function countMode(arr){const map=new Map();for(const x of arr){map.set(x,(map.get(x)||0)+1);}let best=null,cnt=-1,pos=arr.length;for(let i=0;i<arr.length;i++){const k=arr[i],c=map.get(k);if(c>cnt||(c===cnt&&i<pos)){best=k;cnt=c;pos=i;}}return best;}
+function countMode(arr){ const map=new Map(); for(const x of arr){ map.set(x,(map.get(x)||0)+1); }
+  let best=null,cnt=-1,pos=arr.length; for(let i=0;i<arr.length;i++){ const k=arr[i],c=map.get(k); if(c>cnt||(c===cnt&&i<pos)){best=k;cnt=c;pos=i;} } return best; }
 function calcAge(b){const t=new Date();const d=new Date(b);let a=t.getFullYear()-d.getFullYear();const m=t.getMonth()-d.getMonth();if(m<0||(m===0&&t.getDate()<d.getDate()))a--;return a;}
 function bucketIdx(age){if(age<10)return 0;if(age<15)return 1;if(age<20)return 2;if(age<25)return 3;if(age<30)return 4;if(age<35)return 5;if(age<40)return 6;if(age<45)return 7;if(age<50)return 8;if(age<=70)return 9;return -1;}
 const BUCKETS=["0-10","10-15","15-20","20-25","25-30","30-35","35-40","40-45","45-50","50-70"];
 
-/* 統計（只顯示條形圖） */
+/* === 統計：命格出現次數 / 佔比 / 最長連續 === */
 function computeStats(names){
-  const total=names.length,counts={};let cur=null,len=0,start=0,longest={name:null,len:0,start:0,end:0};
-  names.forEach((n,i)=>{counts[n]=(counts[n]||0)+1;if(n===cur){len++;}else{if(len>longest.len)longest={name:cur,len,start,end:i-1};cur=n;len=1;start=i;}});
-  if(len>longest.len)longest={name:cur,len,start,end:names.length-1};
-  const dist=Object.entries(counts).map(([name,count])=>({name,count,percent:Math.round(count/total*1000)/10})).sort((a,b)=>b.count-a.count);
-  return{total,dist,longest,most:(dist[0]?.name||"—")};
+  const total = names.length;
+  const counts = {};
+  let cur = null, len = 0, start = 0;
+  let longest = {name:null,len:0,start:0,end:0};
+
+  names.forEach((n,i)=>{
+    counts[n] = (counts[n]||0) + 1;
+    if(n===cur){ len++; }
+    else{
+      if(len>longest.len) longest = {name:cur,len,start,end:i-1};
+      cur = n; len = 1; start = i;
+    }
+  });
+  if(len>longest.len) longest = {name:cur,len,start:end=nones?0:0}; // keep
+  longest.end = names.length-1;
+
+  const dist = Object.entries(counts)
+    .map(([name,count])=>({name,count,percent:Math.round(count/total*1000)/10}))
+    .sort((a,b)=>b.count-a.count);
+
+  return { total, dist, longest, most: (dist[0]?.name || "—") };
 }
-function renderStats(elId,stats){
-  const el=document.getElementById(elId);
-  const bars=stats.dist.map(d=>`
+function renderStats(elId, stats, labelProvider){
+  const el = document.getElementById(elId);
+  const bars = stats.dist.map(d=>`
     <div class="statRow">
       <span class="badge" style="min-width:58px">${d.name}</span>
       <div class="statBar"><i class="c-${COLOR_CLASS[d.name]||'fu'}" style="width:${d.percent}%;"></i></div>
       <span class="muted" style="min-width:96px;text-align:right">${d.count}（${d.percent}%）</span>
     </div>`).join("");
-  el.innerHTML=`<div class="muted" style="margin:4px 0">統計</div>${bars||'<div class="muted">—</div>'}`;
+  const streakLabel = stats.longest.name
+    ? `${labelProvider(stats.longest.start)} → ${labelProvider(stats.longest.end)}（${stats.longest.len} 段）`
+    : "—";
+  el.innerHTML = `
+    <div class="muted" style="margin:4px 0">統計</div>
+    ${bars || '<div class="muted">—</div>'}
+    <div class="muted" style="margin-top:8px">
+      最常出現：<b>${stats.most}</b>
+      　最長連續：<b>${stats.longest.name||'—'}</b>
+      　區間：${streakLabel}
+    </div>`;
 }
 
-/* 身分證＋生日 */
-document.getElementById('go').addEventListener('click',()=>{
+/* === 身分證＋生日 === */
+document.getElementById('go').addEventListener('click', ()=>{
   const idn=document.getElementById('idn').value.trim();
   const birth=document.getElementById('birth').value;
-  if(!idn||!birth){alert('請輸入身分證號與出生日期');return;}
+  if(!idn||!birth){ alert('請輸入身分證號與出生日期'); return; }
   const allPairs=buildPairsFromID(idn);
   const pairs=(allPairs.length>=10)?allPairs.slice(0,10):[...allPairs,...Array(10-allPairs.length).fill(allPairs.at(-1)||"11")];
   const names=pairs.map(p=>FIELD[p]||"—");
   const age=calcAge(birth); const bidx=bucketIdx(age); if(bidx===-1){alert('支援年齡 0–70');return;}
   const benming=countMode(names); const liunian=names[bidx];
 
-  document.getElementById('headline').innerHTML=
+  document.getElementById('headline').innerHTML =
     `<span class="pill">年齡 ${age}</span><span class="pill">區間 ${BUCKETS[bidx]}</span>　<span class="pill">本命 ${benming}</span><span class="pill">流年 ${liunian}</span>`;
-  chipsForList(document.getElementById('chipsID'),names);
+  chipsForList(document.getElementById('chipsID'), names);
 
-  const tbodyID=document.getElementById('tbodyID');tbodyID.innerHTML="";
+  const tbodyID=document.getElementById('tbodyID'); tbodyID.innerHTML="";
   for(let i=0;i<10;i++){
-    const pair=pairs[i],name=names[i];
+    const pair=pairs[i], name=names[i];
     const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${BUCKETS[i]}</td><td>${pair}</td><td>${chip(name)}</td><td>${tipHTMLFor(name)}</td>`;
+    tr.innerHTML = `<td>${BUCKETS[i]}</td><td>${pair}</td><td>${chip(name)}</td><td>${tipHTMLFor(name)}</td>`;
     tbodyID.appendChild(tr);
   }
 
-  const remedySet=new Set();names.forEach(n=>remedyParts(n).forEach(p=>remedySet.add(p)));
-  const recList=Array.from(remedySet);
-  const numsLine=recList.map(n=>`${n}（${(REVERSE[n]||[]).join("、")||"—"}）`).join("　");
+  /* 建議：依化解配方；數字：列出「表格中出現過的全部命格」對應的標準兩碼 */
+  const order=["生氣","天醫","延年","伏位","禍害","六煞","絕命","五鬼"];
 
-  document.getElementById('adviceID').innerHTML=
-    `<div class="muted">建議：${recList.join("、")||"—"}</div>
-     <div class="muted">數字：${numsLine||"—"}</div>`;
+  // 建議（化解配方）
+  const remedySet=new Set(); names.forEach(n=>remedyParts(n).forEach(p=>remedySet.add(p)));
+  const adviceList = Array.from(remedySet);
 
-  const statsID=computeStats(names);
-  renderStats('statsID',statsID);
+  // 數字（出現過的全部命格）
+  const appeared = Array.from(new Set(names.filter(n=>n!=="—")));
+  const numsLine = appeared
+      .sort((a,b)=>order.indexOf(a)-order.indexOf(b))
+      .map(n => `${n}（${(REVERSE[n]||[]).join("、") || "—"}）`)
+      .join("　");
+
+  document.getElementById('adviceID').innerHTML =
+    `<div class="muted">建議：${adviceList.join("、") || "—"}</div>
+     <div class="muted">數字：${numsLine || "—"}</div>`;
+
+  // 統計（顯示在表格下方）
+  const statsID = computeStats(names);
+  renderStats('statsID', statsID, i => BUCKETS[i]);
 
   document.getElementById('result').style.display='block';
   document.getElementById('resultNum').style.display='none';
 });
 document.getElementById('reset').addEventListener('click',()=>{
-  document.getElementById('idn').value='';document.getElementById('birth').value='';
+  document.getElementById('idn').value=''; document.getElementById('birth').value='';
   document.getElementById('result').style.display='none';
 });
 
-/* 純數字 */
-document.getElementById('goNum').addEventListener('click',()=>{
+/* === 純數字 === */
+document.getElementById('goNum').addEventListener('click', ()=>{
   const numStr=document.getElementById('numStr').value.trim();
-  if(!numStr){alert('請輸入純數字');return;}
+  if(!numStr){ alert('請輸入純數字'); return; }
   const allPairs=buildPairsFromNumber(numStr);
   const names=allPairs.map(p=>FIELD[p]||"—");
   const total=allPairs.length;
 
-  const tbody=document.getElementById('tbody');tbody.innerHTML="";
+  const tbody=document.getElementById('tbody'); tbody.innerHTML="";
   for(let i=0;i<allPairs.length;i++){
-    const n=names[i],tr=document.createElement('tr');
-    tr.innerHTML=`<td>第${i+1}段</td><td>${allPairs[i]}</td><td>${chip(n)}</td><td>${tipHTMLFor(n)}</td>`;
+    const n=names[i], tr=document.createElement('tr');
+    tr.innerHTML = `<td>第${i+1}段</td><td>${allPairs[i]}</td><td>${chip(n)}</td><td>${tipHTMLFor(n)}</td>`;
     tbody.appendChild(tr);
   }
 
   const main=countMode(names);
-  const counts={};names.forEach(n=>counts[n]=(counts[n]||0)+1);
+  const counts={}; names.forEach(n=>counts[n]=(counts[n]||0)+1);
   const countStr=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).map(k=>`${k}:${counts[k]}`).join("  ");
 
-  document.getElementById('headlineNum').innerHTML=
+  document.getElementById('headlineNum').innerHTML =
     `<span class="pill">純數字推算</span> <span class="muted">總段數 ${total}</span>　<span class="pill">主命 ${main}</span>`;
-  document.getElementById('summaryNum').innerHTML=
+  document.getElementById('summaryNum').innerHTML =
     `<span class="muted">${SHOW_HINT?HINT[main]:""}</span><div class="muted" style="margin-top:6px">分佈：${countStr}</div>`;
 
-  const remedySet=new Set();names.forEach(n=>remedyParts(n).forEach(p=>remedySet.add(p)));
-  const recList=Array.from(remedySet);
-  const numsLine=recList.map(n=>`${n}（${(REVERSE[n]||[]).join("、")||"—"}）`).join("　");
+  /* 建議：化解配方；數字：列出所有出現過的命格 */
+  const order=["生氣","天醫","延年","伏位","禍害","六煞","絕命","五鬼"];
 
-  document.getElementById('adviceNum').innerHTML=
-    `<div class="muted">建議：${recList.join("、")||"—"}</div>
-     <div class="muted">數字：${numsLine||"—"}</div>`;
+  // 建議（化解配方）
+  const remedySet=new Set(); names.forEach(n=>remedyParts(n).forEach(p=>remedySet.add(p)));
+  const adviceList = Array.from(remedySet);
 
-  const statsNum=computeStats(names);
-  renderStats('statsNum',statsNum);
+  // 數字（出現過的全部命格）
+  const appeared = Array.from(new Set(names.filter(n=>n!=="—")));
+  const numsLine = appeared
+      .sort((a,b)=>order.indexOf(a)-order.indexOf(b))
+      .map(n => `${n}（${(REVERSE[n]||[]).join("、") || "—"}）`)
+      .join("　");
+
+  document.getElementById('adviceNum').innerHTML =
+    `<div class="muted">建議：${adviceList.join("、") || "—"}</div>
+     <div class="muted">數字：${numsLine || "—"}</div>`;
+
+  // 統計（顯示在表格下方）
+  const statsNum = computeStats(names);
+  renderStats('statsNum', statsNum, i => `第${i+1}段`);
 
   document.getElementById('resultNum').style.display='block';
   document.getElementById('result').style.display='none';
 });
 document.getElementById('resetNum').addEventListener('click',()=>{
-  document.getElementById('numStr').value='';document.getElementById('tbody').innerHTML="";
+  document.getElementById('numStr').value=''; document.getElementById('tbody').innerHTML="";
   document.getElementById('resultNum').style.display='none';
 });
 
 /* Tabs + Theme */
-const tabID=document.getElementById('tabID'),tabNum=document.getElementById('tabNum'),paneID=document.getElementById('paneID'),paneNum=document.getElementById('paneNum');
+const tabID=document.getElementById('tabID'), tabNum=document.getElementById('tabNum'), paneID=document.getElementById('paneID'), paneNum=document.getElementById('paneNum');
 function setTab(which){
-  if(which==='id'){tabID.classList.add('active');tabNum.classList.remove('active');paneID.classList.remove('hide');paneNum.classList.add('hide');document.getElementById('resultNum').style.display='none';}
-  else{tabID.classList.remove('active');tabNum.classList.add('active');paneID.classList.add('hide');paneNum.classList.remove('hide');document.getElementById('result').style.display='none';}
+  if(which==='id'){ tabID.classList.add('active');tabNum.classList.remove('active');paneID.classList.remove('hide');paneNum.classList.add('hide');document.getElementById('resultNum').style.display='none'; }
+  else{ tabID.classList.remove('active');tabNum.classList.add('active');paneID.classList.add('hide');paneNum.classList.remove('hide');document.getElementById('result').style.display='none'; }
 }
 tabID.addEventListener('click',()=>setTab('id'));
 tabNum.addEventListener('click',()=>setTab('num'));
 
-const labelEl=document.getElementById('themeLabel');const switchEl=document.getElementById('themeSwitch');
-function setTheme(mode){if(mode==='dark'){document.body.classList.add('dark');labelEl.textContent='黑色主題';}else{document.body.classList.remove('dark');labelEl.textContent='湖水綠';}localStorage.setItem('iching_theme',mode);}
+const labelEl=document.getElementById('themeLabel'); const switchEl=document.getElementById('themeSwitch');
+function setTheme(mode){ if(mode==='dark'){document.body.classList.add('dark');labelEl.textContent='黑色主題';} else{document.body.classList.remove('dark');labelEl.textContent='湖水綠';} localStorage.setItem('iching_theme',mode); }
 setTheme(localStorage.getItem('iching_theme')||'light');
-switchEl.addEventListener('click',()=>{const now=document.body.classList.contains('dark')?'light':'dark';setTheme(now);});
+switchEl.addEventListener('click',()=>{ const now=document.body.classList.contains('dark')?'light':'dark'; setTheme(now); });
 </script>
 </body>
 </html>

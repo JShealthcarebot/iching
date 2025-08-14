@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>[ 易經數字 ]</title>
+<title>[ 易經數字 ] v3</title>
 <meta name="theme-color" content="#0f8f86" />
 <style>
   :root{
@@ -50,6 +50,7 @@
   .chip .dot{width:8px;height:8px;border-radius:50%;background:#fff;opacity:.85}
   .c-sheng{background:var(--c-sheng)} .c-tian{background:var(--c-tian)} .c-yan{background:var(--c-yan)} .c-fu{background:var(--c-fu)}
   .c-huo{background:var(--c-huo)} .c-jue{background:var(--c-jue)} .c-liu{background:var(--c-liu)} .c-wu{background:var(--c-wu)}
+  .footer{margin-top:6px;font-size:12px;text-align:right;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -101,6 +102,7 @@
         </table>
       </div>
       <div id="adviceID" style="margin-top:10px"></div>
+      <div class="footer">v3</div>
     </div>
 
     <!-- 純數字結果 -->
@@ -114,6 +116,7 @@
       </div>
       <div id="summaryNum" style="margin-top:10px"></div>
       <div id="adviceNum" style="margin-top:8px"></div>
+      <div class="footer">v3</div>
     </div>
   </div>
 
@@ -170,8 +173,14 @@ const TRAIT={
 };
 
 /* 小工具 */
-function chip(label){ const cls="c-"+(COLOR_CLASS[label]||"fu"); return `<span class="chip ${cls}"><span class="dot"></span>${label}</span>`; }
-function remedyParts(name){ const t=REMEDY[name]||""; const m=t.match(/『(.+?)』/); return m?m[1].split("＋").map(s=>s.trim()).filter(Boolean):[]; }
+function chip(label){
+  const cls="c-"+(COLOR_CLASS[label]||"fu");
+  return `<span class="chip ${cls}"><span class="dot"></span>${label}</span>`;
+}
+function remedyParts(name){
+  const t=REMEDY[name]||""; const m=t.match(/『(.+?)』/);
+  return m?m[1].split("＋").map(s=>s.trim()).filter(Boolean):[];
+}
 function chipsForList(container, names){
   const set=new Set(names); names.forEach(n=>remedyParts(n).forEach(p=>set.add(p)));
   container.innerHTML=`<div class="chips">${Array.from(set).map(chip).join("")}</div>`;
@@ -181,12 +190,9 @@ function tipHTMLFor(name){
   let remedyText=""; if(SHOW_REMEDY && rem){ const m=rem.match(/『(.+?)』/); remedyText=m?`　｜ 化解：${m[1]}`:""; }
   const traitPart=SHOW_TRAIT?`${trait}`:"";
   const hintPart =(SHOW_HINT && hint)?`　｜ 理財：${hint}`:"";
-  return `<span class="badge">${name}</span>　${traitPart}${hintPart}${remedyText}`;
+  return `${chip(name)}　${traitPart}${hintPart}${remedyText}`;
 }
-
-/* A→11 */
 function letterTo11(ch){ const code=ch.toUpperCase().charCodeAt(0); if(code<65||code>90)return null; const n=code-64; const tens=Math.floor((n-1)/9)+1; const ones=((n-1)%9)+1; return `${tens}${ones}`; }
-
 /* 規則（B 版）：0=重複前碼；5=同化下一碼（peek，不消耗）；1-9=第二碼且更新 prev；先用舊 prev 組 pair */
 function buildPairsFromID(idn){
   const s=(idn||"").toUpperCase().trim(); if(!s) return [];
@@ -216,11 +222,19 @@ function buildPairsFromNumber(numStr){
 }
 function countMode(arr){ const map=new Map(); for(const x of arr){ map.set(x,(map.get(x)||0)+1); }
   let best=null,cnt=-1,pos=arr.length; for(let i=0;i<arr.length;i++){ const k=arr[i],c=map.get(k); if(c>cnt||(c===cnt&&i<pos)){best=k;cnt=c;pos=i;} } return best; }
-
-/* 年齡／區間 */
 function calcAge(b){const t=new Date();const d=new Date(b);let a=t.getFullYear()-d.getFullYear();const m=t.getMonth()-d.getMonth();if(m<0||(m===0&&t.getDate()<d.getDate()))a--;return a;}
 function bucketIdx(age){if(age<10)return 0;if(age<15)return 1;if(age<20)return 2;if(age<25)return 3;if(age<30)return 4;if(age<35)return 5;if(age<40)return 6;if(age<45)return 7;if(age<50)return 8;if(age<=70)return 9;return -1;}
 const BUCKETS=["0-10","10-15","15-20","20-25","25-30","30-35","35-40","40-45","45-50","50-70"];
+
+/* 將兩碼依命名分組：{ 生氣:[67,…], 延年:[34,…] } */
+function groupPairNumbersByName(names, pairs){
+  const map = {};
+  for(let i=0;i<names.length;i++){
+    const key = names[i];
+    (map[key] ||= []).push(pairs[i]);
+  }
+  return map;
+}
 
 /* === 身分證＋生日 === */
 document.getElementById('go').addEventListener('click', ()=>{
@@ -241,14 +255,19 @@ document.getElementById('go').addEventListener('click', ()=>{
   for(let i=0;i<10;i++){
     const pair=pairs[i], name=names[i];
     const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${BUCKETS[i]}</td><td>${pair}</td><td>${name}</td><td>${tipHTMLFor(name)}</td>`;
+    tr.innerHTML = `<td>${BUCKETS[i]}</td><td>${pair}</td><td>${chip(name)}</td><td>${tipHTMLFor(name)}</td>`;
     tbodyID.appendChild(tr);
   }
 
-  // 化解建議總覽（簡約：列出本次涉及的化解成分）
+  // 建議 + 數字清單
   const remedySet=new Set(); names.forEach(n=>remedyParts(n).forEach(p=>remedySet.add(p)));
+  const recList = Array.from(remedySet);
+  const byName = groupPairNumbersByName(names, pairs);
+  const numsLine = recList.map(n => `${n}（${(byName[n]||[]).join("、") || "—"}）`).join("　");
+
   document.getElementById('adviceID').innerHTML =
-    `<div class="muted">建議：${Array.from(remedySet).join("、") || "—"}</div>`;
+    `<div class="muted">建議：${recList.join("、") || "—"}</div>
+     <div class="muted">數字：${numsLine || "—"}</div>`;
 
   document.getElementById('result').style.display='block';
   document.getElementById('resultNum').style.display='none';
@@ -269,7 +288,7 @@ document.getElementById('goNum').addEventListener('click', ()=>{
   const tbody=document.getElementById('tbody'); tbody.innerHTML="";
   for(let i=0;i<allPairs.length;i++){
     const n=names[i], tr=document.createElement('tr');
-    tr.innerHTML = `<td>第${i+1}段</td><td>${allPairs[i]}</td><td>${n}</td><td>${tipHTMLFor(n)}</td>`;
+    tr.innerHTML = `<td>第${i+1}段</td><td>${allPairs[i]}</td><td>${chip(n)}</td><td>${tipHTMLFor(n)}</td>`;
     tbody.appendChild(tr);
   }
 
@@ -282,9 +301,15 @@ document.getElementById('goNum').addEventListener('click', ()=>{
   document.getElementById('summaryNum').innerHTML =
     `<span class="muted">${SHOW_HINT?HINT[main]:""}</span><div class="muted" style="margin-top:6px">分佈：${countStr}</div>`;
 
+  // 建議 + 數字清單
   const remedySet=new Set(); names.forEach(n=>remedyParts(n).forEach(p=>remedySet.add(p)));
+  const recList = Array.from(remedySet);
+  const byName = groupPairNumbersByName(names, allPairs);
+  const numsLine = recList.map(n => `${n}（${(byName[n]||[]).join("、") || "—"}）`).join("　");
+
   document.getElementById('adviceNum').innerHTML =
-    `<div class="muted">建議：${Array.from(remedySet).join("、") || "—"}</div>`;
+    `<div class="muted">建議：${recList.join("、") || "—"}</div>
+     <div class="muted">數字：${numsLine || "—"}</div>`;
 
   document.getElementById('resultNum').style.display='block';
   document.getElementById('result').style.display='none';

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>[ 易經數字 ] v3.2</title>
+<title>[ 易經數字 ] v3.4</title>
 <meta name="theme-color" content="#0f8f86" />
 <style>
   :root{
@@ -49,10 +49,16 @@
   .c-sheng{background:var(--c-sheng)} .c-tian{background:var(--c-tian)} .c-yan{background:var(--c-yan)} .c-fu{background:var(--c-fu)}
   .c-huo{background:var(--c-huo)} .c-jue{background:var(--c-jue)} .c-liu{background:var(--c-liu)} .c-wu{background:var(--c-wu)}
   .footer{margin-top:6px;font-size:12px;text-align:right;color:var(--muted)}
+
   /* 統計條 */
   .statRow{display:flex;align-items:center;gap:8px;margin:6px 0}
   .statBar{flex:1;height:10px;border-radius:999px;background:var(--border);overflow:hidden}
   .statBar i{display:block;height:100%}
+
+  /* 銀行建議表 */
+  .bankTable{width:100%;border-collapse:collapse;margin-top:8px}
+  .bankTable th,.bankTable td{border-bottom:1px solid var(--border);padding:8px 10px;font-size:14px}
+  .badgeCnt{display:inline-block;background:color-mix(in oklab, var(--accent) 12%, transparent);padding:2px 8px;border-radius:8px}
 </style>
 </head>
 <body>
@@ -84,7 +90,7 @@
       <!-- 純數字 -->
       <div id="paneNum" class="hide">
         <div class="row">
-          <div><label for="numStr">純數字</label><input id="numStr" placeholder="例如 11220587476 或更長的序列" /></div>
+          <div><label for="numStr">純數字</label><input id="numStr" value="123456789" /></div>
         </div>
         <div class="row" style="margin-top:12px">
           <button id="goNum" class="btn">計算（純數字）</button>
@@ -105,7 +111,7 @@
       </div>
       <div id="adviceID" style="margin-top:10px"></div>
       <div id="statsID" style="margin-top:12px"></div>
-      <div class="footer">v3.2</div>
+      <div class="footer">v3.4</div>
     </div>
 
     <!-- 純數字結果 -->
@@ -120,7 +126,8 @@
       <div id="summaryNum" style="margin-top:10px"></div>
       <div id="adviceNum" style="margin-top:8px"></div>
       <div id="statsNum" style="margin-top:12px"></div>
-      <div class="footer">v3.2</div>
+      <div id="bankNum" style="margin-top:14px"></div>
+      <div class="footer">v3.4</div>
     </div>
   </div>
 
@@ -228,7 +235,7 @@ function calcAge(b){const t=new Date();const d=new Date(b);let a=t.getFullYear()
 function bucketIdx(age){if(age<10)return 0;if(age<15)return 1;if(age<20)return 2;if(age<25)return 3;if(age<30)return 4;if(age<35)return 5;if(age<40)return 6;if(age<45)return 7;if(age<50)return 8;if(age<=70)return 9;return -1;}
 const BUCKETS=["0-10","10-15","15-20","20-25","25-30","30-35","35-40","40-45","45-50","50-70"];
 
-/* === 統計：命格出現次數 / 佔比（已移除最常出現/最長連續/區間） === */
+/* === 統計：命格出現次數 / 佔比（無最長/最常文案） === */
 function computeStats(names){
   const total = names.length;
   const counts = {};
@@ -249,6 +256,93 @@ function renderStats(elId, stats){
   el.innerHTML = `
     <div class="muted" style="margin:4px 0">統計</div>
     ${bars || '<div class="muted">—</div>'}`;
+}
+
+/* === 銀行帳號（A~I）參考表 === */
+const BANK_ROWS = [
+  {letter:"A", name:"伏位", desc:"八字五行相生相剋／平衡力"},
+  {letter:"B", name:"延年", desc:"錢財延續性"},
+  {letter:"C", name:"生氣", desc:"靠貴人入財／創造新機運"},
+  {letter:"D", name:"天醫", desc:"正財運／財庫"},
+  {letter:"E", name:"禍害", desc:"因小人或健康或面子問題而破財漏財／以口入財"},
+  {letter:"F", name:"六煞", desc:"因家人或感情問題而破財漏財／有異性財"},
+  {letter:"G", name:"絕命", desc:"財運大起大落，或有投資風險／業務財"},
+  {letter:"H", name:"五鬼", desc:"偏財運／業務催財（過多則財來財去一場空）"},
+  {letter:"I", name:"伏位", desc:"保守／穩定中求財"}
+];
+const NAME_TO_LETTERS = {
+  "伏位":["A","I"],
+  "延年":["B"],
+  "生氣":["C"],
+  "天醫":["D"],
+  "禍害":["E"],
+  "六煞":["F"],
+  "絕命":["G"],
+  "五鬼":["H"]
+};
+const BAD_SET    = new Set(["禍害","六煞","絕命","五鬼"]);
+
+/* 統計每種命格出現次數（含首見位置） */
+function countByName(names){
+  const map = {};
+  names.forEach((n,i)=>{
+    if(!map[n]) map[n] = {count:0, first:i};
+    map[n].count++;
+  });
+  return map;
+}
+/* 產生建議文字 */
+function buildAdviceFromCounts(names){
+  const total = names.length || 1;
+  const counts = countByName(names);
+
+  let badTotal = 0;
+  Object.keys(counts).forEach(k=>{
+    if(BAD_SET.has(k)) badTotal += counts[k].count;
+  });
+  const badPct = Math.round(badTotal/total*100);
+
+  const sorted = Object.keys(counts)
+    .map(k=>({name:k, ...counts[k]}))
+    .sort((a,b)=> b.count - a.count || a.first - b.first);
+
+  const parts = [];
+  for(const item of sorted){
+    const letters = NAME_TO_LETTERS[item.name] || [];
+    if(item.name === "伏位"){
+      parts.push(`A（伏位，I 亦可）`);
+    }else{
+      letters.forEach(L => parts.push(`${L}（${item.name}）`));
+    }
+  }
+  const fixLine = (badPct >= 50)
+    ? `<div class="muted">※ 負面佔比偏高（${badPct}%）。先以 <b>A／B／C／D</b>（伏位／延年／生氣／天醫）提升正面能量，再依序挑選。</div>`
+    : "";
+  const orderLine = `<div class="muted">建議優先順序（依出現次數）：${parts.join(" → ")}</div>`;
+
+  return fixLine + orderLine;
+}
+/* 渲染 A~I 表格 */
+function renderBankGuide(containerId, names){
+  const counts = countByName(names);
+  const rows = BANK_ROWS.map(r=>{
+    const c = counts[r.name]?.count || 0;
+    return `<tr>
+      <td style="width:60px"><b>${r.letter}</b></td>
+      <td style="width:90px">${chip(r.name)}</td>
+      <td style="width:80px"><span class="badgeCnt">${c}</span></td>
+      <td>${r.desc}</td>
+    </tr>`;
+  }).join("");
+  const adviceHTML = buildAdviceFromCounts(names);
+  const html = `
+    <div class="muted" style="margin:4px 0">銀行帳號吉凶參考（依本次純數字推算之命格分佈）</div>
+    ${adviceHTML}
+    <table class="bankTable">
+      <thead><tr><th>類別</th><th>命格</th><th>次數</th><th>說明</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  document.getElementById(containerId).innerHTML = html;
 }
 
 /* === 身分證＋生日 === */
@@ -283,7 +377,7 @@ document.getElementById('go').addEventListener('click', ()=>{
     `<div class="muted">建議：${recList.join("、") || "—"}</div>
      <div class="muted">數字：${numsLine || "—"}</div>`;
 
-  // 統計（表格下方；不再顯示最常/最長資訊）
+  // 統計（顯示在表格下方）
   const statsID = computeStats(names);
   renderStats('statsID', statsID);
 
@@ -319,6 +413,7 @@ document.getElementById('goNum').addEventListener('click', ()=>{
   document.getElementById('summaryNum').innerHTML =
     `<span class="muted">${SHOW_HINT?HINT[main]:""}</span><div class="muted" style="margin-top:6px">分佈：${countStr}</div>`;
 
+  // 建議（由化解配方）＋ 對應的全部標準兩碼
   const remedySet=new Set(); names.forEach(n=>remedyParts(n).forEach(p=>remedySet.add(p)));
   const recList = Array.from(remedySet);
   const numsLine = recList.map(n => `${n}（${(REVERSE[n]||[]).join("、") || "—"}）`).join("　");
@@ -327,9 +422,12 @@ document.getElementById('goNum').addEventListener('click', ()=>{
     `<div class="muted">建議：${recList.join("、") || "—"}</div>
      <div class="muted">數字：${numsLine || "—"}</div>`;
 
-  // 統計（不顯示最常/最長）
+  // 統計（顯示在表格下方）
   const statsNum = computeStats(names);
   renderStats('statsNum', statsNum);
+
+  // 銀行帳號建議表
+  renderBankGuide('bankNum', names);
 
   document.getElementById('resultNum').style.display='block';
   document.getElementById('result').style.display='none';

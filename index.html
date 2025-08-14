@@ -228,31 +228,17 @@ function calcAge(b){const t=new Date();const d=new Date(b);let a=t.getFullYear()
 function bucketIdx(age){if(age<10)return 0;if(age<15)return 1;if(age<20)return 2;if(age<25)return 3;if(age<30)return 4;if(age<35)return 5;if(age<40)return 6;if(age<45)return 7;if(age<50)return 8;if(age<=70)return 9;return -1;}
 const BUCKETS=["0-10","10-15","15-20","20-25","25-30","30-35","35-40","40-45","45-50","50-70"];
 
-/* === 統計：命格出現次數 / 佔比 / 最長連續 === */
+/* === 統計：命格出現次數 / 佔比（已移除最常出現/最長連續/區間） === */
 function computeStats(names){
   const total = names.length;
   const counts = {};
-  let cur = null, len = 0, start = 0;
-  let longest = {name:null,len:0,start:0,end:0};
-
-  names.forEach((n,i)=>{
-    counts[n] = (counts[n]||0) + 1;
-    if(n===cur){ len++; }
-    else{
-      if(len>longest.len) longest = {name:cur,len,start,end:i-1};
-      cur = n; len = 1; start = i;
-    }
-  });
-  if(len>longest.len) longest = {name:cur,len,start:end=nones?0:0}; // keep
-  longest.end = names.length-1;
-
+  names.forEach(n=>counts[n]=(counts[n]||0)+1);
   const dist = Object.entries(counts)
     .map(([name,count])=>({name,count,percent:Math.round(count/total*1000)/10}))
     .sort((a,b)=>b.count-a.count);
-
-  return { total, dist, longest, most: (dist[0]?.name || "—") };
+  return { total, dist };
 }
-function renderStats(elId, stats, labelProvider){
+function renderStats(elId, stats){
   const el = document.getElementById(elId);
   const bars = stats.dist.map(d=>`
     <div class="statRow">
@@ -260,17 +246,9 @@ function renderStats(elId, stats, labelProvider){
       <div class="statBar"><i class="c-${COLOR_CLASS[d.name]||'fu'}" style="width:${d.percent}%;"></i></div>
       <span class="muted" style="min-width:96px;text-align:right">${d.count}（${d.percent}%）</span>
     </div>`).join("");
-  const streakLabel = stats.longest.name
-    ? `${labelProvider(stats.longest.start)} → ${labelProvider(stats.longest.end)}（${stats.longest.len} 段）`
-    : "—";
   el.innerHTML = `
     <div class="muted" style="margin:4px 0">統計</div>
-    ${bars || '<div class="muted">—</div>'}
-    <div class="muted" style="margin-top:8px">
-      最常出現：<b>${stats.most}</b>
-      　最長連續：<b>${stats.longest.name||'—'}</b>
-      　區間：${streakLabel}
-    </div>`;
+    ${bars || '<div class="muted">—</div>'}`;
 }
 
 /* === 身分證＋生日 === */
@@ -296,27 +274,18 @@ document.getElementById('go').addEventListener('click', ()=>{
     tbodyID.appendChild(tr);
   }
 
-  /* 建議：依化解配方；數字：列出「表格中出現過的全部命格」對應的標準兩碼 */
-  const order=["生氣","天醫","延年","伏位","禍害","六煞","絕命","五鬼"];
-
-  // 建議（化解配方）
+  // 建議（由化解配方）＋ 對應的全部標準兩碼
   const remedySet=new Set(); names.forEach(n=>remedyParts(n).forEach(p=>remedySet.add(p)));
-  const adviceList = Array.from(remedySet);
-
-  // 數字（出現過的全部命格）
-  const appeared = Array.from(new Set(names.filter(n=>n!=="—")));
-  const numsLine = appeared
-      .sort((a,b)=>order.indexOf(a)-order.indexOf(b))
-      .map(n => `${n}（${(REVERSE[n]||[]).join("、") || "—"}）`)
-      .join("　");
+  const recList = Array.from(remedySet);
+  const numsLine = recList.map(n => `${n}（${(REVERSE[n]||[]).join("、") || "—"}）`).join("　");
 
   document.getElementById('adviceID').innerHTML =
-    `<div class="muted">建議：${adviceList.join("、") || "—"}</div>
+    `<div class="muted">建議：${recList.join("、") || "—"}</div>
      <div class="muted">數字：${numsLine || "—"}</div>`;
 
-  // 統計（顯示在表格下方）
+  // 統計（表格下方；不再顯示最常/最長資訊）
   const statsID = computeStats(names);
-  renderStats('statsID', statsID, i => BUCKETS[i]);
+  renderStats('statsID', statsID);
 
   document.getElementById('result').style.display='block';
   document.getElementById('resultNum').style.display='none';
@@ -350,27 +319,17 @@ document.getElementById('goNum').addEventListener('click', ()=>{
   document.getElementById('summaryNum').innerHTML =
     `<span class="muted">${SHOW_HINT?HINT[main]:""}</span><div class="muted" style="margin-top:6px">分佈：${countStr}</div>`;
 
-  /* 建議：化解配方；數字：列出所有出現過的命格 */
-  const order=["生氣","天醫","延年","伏位","禍害","六煞","絕命","五鬼"];
-
-  // 建議（化解配方）
   const remedySet=new Set(); names.forEach(n=>remedyParts(n).forEach(p=>remedySet.add(p)));
-  const adviceList = Array.from(remedySet);
-
-  // 數字（出現過的全部命格）
-  const appeared = Array.from(new Set(names.filter(n=>n!=="—")));
-  const numsLine = appeared
-      .sort((a,b)=>order.indexOf(a)-order.indexOf(b))
-      .map(n => `${n}（${(REVERSE[n]||[]).join("、") || "—"}）`)
-      .join("　");
+  const recList = Array.from(remedySet);
+  const numsLine = recList.map(n => `${n}（${(REVERSE[n]||[]).join("、") || "—"}）`).join("　");
 
   document.getElementById('adviceNum').innerHTML =
-    `<div class="muted">建議：${adviceList.join("、") || "—"}</div>
+    `<div class="muted">建議：${recList.join("、") || "—"}</div>
      <div class="muted">數字：${numsLine || "—"}</div>`;
 
-  // 統計（顯示在表格下方）
+  // 統計（不顯示最常/最長）
   const statsNum = computeStats(names);
-  renderStats('statsNum', statsNum, i => `第${i+1}段`);
+  renderStats('statsNum', statsNum);
 
   document.getElementById('resultNum').style.display='block';
   document.getElementById('result').style.display='none';

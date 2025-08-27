@@ -3,30 +3,53 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>[ 易經數字 ] 含除錯版</title>
+<title>[ 易經數字 ] 圖形化＋除錯</title>
 <style>
 :root{
-  --bg:#eef9f7;--card:#fff;--text:#0f2a26;--muted:#5e7b75;--accent:#0f8f86;--border:#cfe8e3;
+  --bg:#e9fbf8;--card:#fff;--text:#0f2a26;--muted:#5e7b75;--accent:#0f8f86;--border:#cfe8e3;
+  --c-sheng:#16a34a;--c-tian:#0ea5b7;--c-yan:#7c3aed;--c-fu:#6b7280;
+  --c-huo:#d97706;--c-jue:#ef4444;--c-liu:#f472b6;--c-wu:#111827;
 }
-body{margin:0;background:var(--bg);color:var(--text);
-  font-family:"Inter","Noto Sans TC","Microsoft JhengHei",sans-serif;line-height:1.6}
-.wrap{max-width:980px;margin:28px auto;padding:0 14px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
-h1{margin:0 0 14px;text-align:center;color:var(--accent)}
-label{font-size:14px;color:var(--muted);display:block;margin-bottom:4px}
-input{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px}
-.btn{padding:10px 14px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter","Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.65}
+.wrap{max-width:1000px;margin:28px auto;padding:0 14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 10px 28px rgba(6,107,82,.12);margin-bottom:14px}
+h1{margin:0 0 14px;text-align:center;color:var(--accent);font-size:26px}
+label{font-size:14px;color:var(--muted);display:block;margin-bottom:6px}
+input{width:100%;padding:12px;border:1px solid var(--border);border-radius:12px;background:transparent}
+input::placeholder{color:color-mix(in oklab, var(--muted) 60%, transparent)}
+.btn{padding:12px 16px;border:none;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;cursor:pointer}
 .btn.secondary{background:#0f2a26}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1 1 260px}
 .tabs{display:flex;gap:8px;justify-content:center;margin-bottom:10px}
-.tab{padding:8px 12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;color:var(--muted)}
-.tab.active{background:var(--accent);color:#fff}
+.tab{padding:9px 14px;border:1px solid var(--border);border-radius:999px;cursor:pointer;color:var(--muted);font-weight:700}
+.tab.active{background:var(--accent);color:#fff;border-color:transparent}
 .hide{display:none}
-table{width:100%;border-collapse:collapse;margin-top:8px}
-th,td{padding:6px 8px;border-bottom:1px solid var(--border);font-size:14px}
-thead th{background:#f5fbfa}
-.badge{display:inline-block;background:#e7f6f4;border:1px solid var(--border);border-radius:999px;padding:2px 8px;margin-right:6px;font-size:13px}
-.muted{color:var(--muted);font-size:13px}
-.mono{font-family:ui-monospace,monospace}
+.tableWrap{overflow:auto;max-height:60vh;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:top}
+thead th{position:sticky;top:0;background:var(--card);z-index:1}
+tr:nth-child(2n) td{background:color-mix(in oklab, var(--bg) 60%, #fff 40%)}
+
+.badge{display:inline-block;padding:6px 10px;border-radius:10px;background:color-mix(in oklab, var(--accent) 15%, transparent);border:1px solid var(--border);font-size:12px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 8px;font-size:12px;color:#fff}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:#fff;opacity:.85}
+.c-sheng{background:var(--c-sheng)} .c-tian{background:var(--c-tian)} .c-yan{background:var(--c-yan)} .c-fu{background:var(--c-fu)}
+.c-huo{background:var(--c-huo)} .c-jue{background:var(--c-jue)} .c-liu{background:var(--c-liu)} .c-wu{background:var(--c-wu)}
+.muted{color:var(--muted)} .mono{font-family:ui-monospace,monospace}
+
+.statRow{display:flex;align-items:center;gap:8px;margin:6px 0}
+.statBar{flex:1;height:10px;border-radius:999px;background:var(--border);overflow:hidden}
+.statBar i{display:block;height:100%}
+.kpi{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.kpi .box{flex:1 1 240px;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:color-mix(in oklab, var(--accent) 6%, transparent)}
+
+.aiTable{border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:10px}
+.aiTable thead th{background:color-mix(in oklab, var(--accent) 15%, var(--card));font-weight:800}
+.aiTable td.c{width:70px;text-align:center}
+.aiTable .hit{box-shadow:inset 0 0 0 9999px color-mix(in oklab, var(--accent) 10%, transparent)}
+
 #debugPanel .opt{margin:6px 0;color:var(--muted)}
 #debugTable table{width:100%;border-collapse:collapse;margin-top:6px}
 #debugTable th,#debugTable td{padding:6px 8px;border-bottom:1px solid var(--border);font-size:13px}
@@ -41,113 +64,277 @@ thead th{background:#f5fbfa}
       <div id="tab-id" class="tab active">身分證＋生日</div>
       <div id="tab-num" class="tab">純數字</div>
     </div>
+
     <!-- 身分證 -->
     <div id="pane-id">
-      <label>身分證號</label><input id="idn" placeholder="例如 A123456789"/>
-      <label style="margin-top:8px">出生日期</label><input id="birth" type="date"/>
-      <div style="margin-top:10px">
+      <div class="row">
+        <div><label>身分證號</label><input id="idn" placeholder="例如 A123456789"></div>
+        <div><label>出生日期</label><input id="birth" type="date"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
         <button id="goID" class="btn">計算</button>
         <button id="resetID" class="btn secondary">重設</button>
       </div>
     </div>
+
     <!-- 純數字 -->
     <div id="pane-num" class="hide">
-      <label>純數字</label><input id="numStr" placeholder="例如 11220587476 或更長"/>
-      <div style="margin-top:10px">
-        <button id="goNum" class="btn">計算</button>
+      <div class="row">
+        <div><label>純數字</label><input id="numStr" placeholder="例如 11220587476 或更長的序列"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="goNum" class="btn">計算（純數字）</button>
         <button id="resetNum" class="btn secondary">重設</button>
       </div>
     </div>
+
     <button id="debugToggle" class="btn secondary" style="margin-top:12px">顯示除錯</button>
     <div id="debugPanel" style="display:none;margin-top:12px">
       <div class="opt"><b>0 規則</b>　
         <label><input type="radio" name="r0" value="repeat" checked> 重複前碼</label>
-        <label><input type="radio" name="r0" value="00"> 固定 00</label>
+        <label style="margin-left:10px"><input type="radio" name="r0" value="00"> 固定 00</label>
       </div>
       <div class="opt"><b>5 規則</b>　
-        <label><input type="radio" name="r5" value="peek" checked> peek</label>
-        <label><input type="radio" name="r5" value="consume"> consume</label>
+        <label><input type="radio" name="r5" value="peek" checked> peek（同化、不吃）</label>
+        <label style="margin-left:10px"><input type="radio" name="r5" value="consume"> consume（同化、吃掉）</label>
       </div>
       <div class="opt"><b>字母起始</b>　
         <label><input type="radio" name="rA" value="11" checked> A→11</label>
-        <label><input type="radio" name="rA" value="10"> A→10</label>
+        <label style="margin-left:10px"><input type="radio" name="rA" value="10"> A→10</label>
       </div>
       <div id="debugTable" style="margin-top:10px"></div>
     </div>
   </div>
 
-  <!-- 結果 -->
+  <!-- 身分證結果 -->
   <div id="resultID" class="card" style="display:none">
     <div id="headlineID" class="muted"></div>
-    <table><thead><tr><th>區間</th><th>pair</th><th>命名</th></tr></thead><tbody id="tbodyID"></tbody></table>
+    <div id="chipsID" class="chips" style="margin:8px 0"></div>
+    <div class="tableWrap">
+      <table>
+        <thead><tr><th style="width:110px">年齡區間</th><th style="width:80px">兩碼</th><th style="width:120px">命名</th><th>說明</th></tr></thead>
+        <tbody id="tbodyID"></tbody>
+      </table>
+    </div>
+    <div id="statsID" style="margin-top:10px"></div>
   </div>
+
+  <!-- 純數字結果 -->
   <div id="resultNum" class="card" style="display:none">
     <div id="headlineNum" class="muted"></div>
-    <table><thead><tr><th>#</th><th>pair</th><th>命名</th></tr></thead><tbody id="tbodyNum"></tbody></table>
+    <div class="tableWrap">
+      <table>
+        <thead><tr><th style="width:80px">段次</th><th style="width:90px">兩碼</th><th style="width:120px">命名</th><th>說明</th></tr></thead>
+        <tbody id="tbodyNum"></tbody>
+      </table>
+    </div>
+
+    <!-- A~I 整合建議表 -->
+    <table class="aiTable">
+      <thead><tr><th style="width:60px">類別</th><th style="width:120px">命格</th><th class="c">次數</th><th>說明</th></tr></thead>
+      <tbody id="aiBody"></tbody>
+    </table>
+
+    <div id="statsNum" style="margin-top:10px"></div>
   </div>
 </div>
 
 <script>
-// === 八宅對照表 ===
-const FIELD={11:"伏位",12:"絕命",13:"天醫",14:"生氣",16:"六煞",17:"禍害",18:"五鬼",19:"延年",
-22:"伏位",23:"禍害",24:"五鬼",26:"延年",27:"天醫",28:"生氣",29:"六煞",21:"絕命",
-33:"伏位",34:"延年",36:"五鬼",37:"絕命",38:"六煞",39:"生氣",31:"天醫",32:"禍害",
-44:"伏位",43:"延年",41:"生氣",49:"天醫",46:"禍害",47:"六煞",48:"絕命",42:"五鬼",
-66:"伏位",62:"延年",67:"生氣",68:"天醫",64:"禍害",61:"六煞",69:"絕命",63:"五鬼",
-77:"伏位",78:"延年",76:"生氣",72:"天醫",71:"禍害",74:"六煞",73:"絕命",79:"五鬼",
-88:"伏位",87:"延年",82:"生氣",86:"天醫",89:"禍害",83:"六煞",84:"絕命",81:"五鬼",
-99:"伏位",91:"延年",92:"六煞",93:"生氣",94:"天醫",98:"禍害",96:"絕命",97:"五鬼"};
+/* ====== 兩碼→命名（八宅：11派） ====== */
+const FIELD={
+  11:"伏位",19:"延年",14:"生氣",13:"天醫",17:"禍害",16:"六煞",12:"絕命",18:"五鬼",
+  22:"伏位",26:"延年",28:"生氣",27:"天醫",23:"禍害",29:"六煞",21:"絕命",24:"五鬼",
+  33:"伏位",34:"延年",39:"生氣",31:"天醫",32:"禍害",38:"六煞",37:"絕命",36:"五鬼",
+  44:"伏位",43:"延年",41:"生氣",49:"天醫",46:"禍害",47:"六煞",48:"絕命",42:"五鬼",
+  66:"伏位",62:"延年",67:"生氣",68:"天醫",64:"禍害",61:"六煞",69:"絕命",63:"五鬼",
+  77:"伏位",78:"延年",76:"生氣",72:"天醫",71:"禍害",74:"六煞",73:"絕命",79:"五鬼",
+  88:"伏位",87:"延年",82:"生氣",86:"天醫",89:"禍害",83:"六煞",84:"絕命",81:"五鬼",
+  99:"伏位",91:"延年",93:"生氣",94:"天醫",98:"禍害",92:"六煞",96:"絕命",97:"五鬼",
+};
+/* 顏色對應 */
+const COLOR_CLASS={"生氣":"sheng","天醫":"tian","延年":"yan","伏位":"fu","禍害":"huo","絕命":"jue","六煞":"liu","五鬼":"wu"};
+function chip(name){return `<span class="chip c-${COLOR_CLASS[name]||'fu'}"><span class="dot"></span>${name}</span>`;}
+const TRAIT={
+  "生氣":"貴人與轉機，新生動能。",
+  "天醫":"智慧/資源，配置優化。",
+  "延年":"續航/權力，抗壓領導。",
+  "伏位":"保守穩定、顧家蓄勢。",
+  "禍害":"口舌/小人/面子議題。",
+  "絕命":"大起大落，嚴控風險。",
+  "六煞":"感情/家庭牽動財務。",
+  "五鬼":"偏財/反轉，需守獲利。"
+};
 
-// === 基本函式 ===
-function letterTo11(ch){const n=ch.toUpperCase().charCodeAt(0)-64;const t=Math.floor((n-1)/9)+1;const o=((n-1)%9)+1;return `${t}${o}`;}
-function buildPairs(raw){const s=raw.replace(/\D+/g,"");if(!s)return[];let prev=s[0],pairs=[prev+prev];for(let i=1;i<s.length;i++){let ch=s[i];if(ch==="0")ch=prev;if(ch==="5"){let next=(i+1<s.length)?s[i+1]:prev;ch=next;}pairs.push(prev+ch);prev=ch;}return pairs;}
+/* ===== 工具 ===== */
+const BUCKETS=["0-10","10-15","15-20","20-25","25-30","30-35","35-40","40-45","45-50","50-70"];
+function calcAge(b){const t=new Date(),d=new Date(b);let a=t.getFullYear()-d.getFullYear();const m=t.getMonth()-d.getMonth();if(m<0||(m===0&&t.getDate()<d.getDate()))a--;return a;}
+function bucketIdx(age){if(age<10)return 0;if(age<15)return 1;if(age<20)return 2;if(age<25)return 3;if(age<30)return 4;if(age<35)return 5;if(age<40)return 6;if(age<45)return 7;if(age<50)return 8;if(age<=70)return 9;return -1;}
+function letterTo11(ch){const n=ch.toUpperCase().charCodeAt(0)-64;const tens=Math.floor((n-1)/9)+1;const ones=((n-1)%9)+1;return `${tens}${ones}`;}
+function countMode(arr){const m=new Map();for(const x of arr){m.set(x,(m.get(x)||0)+1)}let best=null,cnt=-1,pos=arr.length;for(let i=0;i<arr.length;i++){const k=arr[i],c=m.get(k);if(c>cnt||(c===cnt&&i<pos)){best=k;cnt=c;pos=i}}return best;}
+function computeStats(names){
+  const total=names.length, counts={}; let cur=null,len=0,start=0,longest={name:null,len:0,start:0,end:0};
+  names.forEach((n,i)=>{counts[n]=(counts[n]||0)+1;if(n===cur){len++;}else{if(len>longest.len)longest={name:cur,len,start,end:i-1};cur=n;len=1;start=i;}});
+  if(len>longest.len)longest={name:cur,len,start:0,end:names.length-1};
+  const dist=Object.entries(counts).map(([name,count])=>({name,count,percent:Math.round(count/total*1000)/10})).sort((a,b)=>b.count-a.count);
+  return {total,counts,dist,longest,most:dist[0]?.name||"—"};
+}
+function renderStats(elId, stats){
+  const el=document.getElementById(elId);
+  const bars=stats.dist.map(d=>`
+    <div class="statRow">
+      <span class="badge" style="min-width:58px">${d.name}</span>
+      <div class="statBar"><i class="c-${COLOR_CLASS[d.name]||'fu'}" style="width:${d.percent}%;"></i></div>
+      <span class="muted" style="min-width:96px;text-align:right">${d.count}（${d.percent}%）</span>
+    </div>`).join("");
+  el.innerHTML = `<div class="muted" style="margin-bottom:6px">統計</div>${bars||'<div class="muted">—</div>'}`;
+}
 
-// === 身分證計算 ===
-document.getElementById('goID').onclick=()=>{
-  const idn=document.getElementById('idn').value.trim().toUpperCase();
-  if(!idn||!/[A-Z]/.test(idn[0])){alert("需輸入身分證號");return;}
-  const init=letterTo11(idn[0]);let pairs=[init],prev=init[1];
-  for(let i=1;i<idn.length;i++){let ch=idn[i];if(!/\d/.test(ch))continue;if(ch==="0")ch=prev;if(ch==="5"){let next=(i+1<idn.length)?idn[i+1]:prev;ch=next;}pairs.push(prev+ch);prev=ch;}
+/* ===== 規則（預設：0 重複前碼；5 peek；A→11） ===== */
+function buildPairsFromID(idn){
+  const s=(idn||"").trim().toUpperCase(); if(!s) return [];
+  const first=letterTo11(s[0]); if(!first) return [];
+  let pairs=[first], prev=first[1];
+  for(let i=1;i<s.length;i++){
+    let ch=s[i]; if(!/\d/.test(ch)) continue;
+    if(ch==='0'){ ch=prev; }
+    else if(ch==='5'){ const next=(i+1<s.length&&/\d/.test(s[i+1]))?s[i+1]:prev; ch=next; } // peek
+    prev = ch; pairs.push(`${pairs[pairs.length-1][1]}${ch}`); // 使用上一 pair 的個位作十位
+  }
+  return pairs;
+}
+function buildPairsFromNumber(numStr){
+  const s=(numStr||"").replace(/\D+/g,""); if(!s) return [];
+  let prev=s[0], pairs=[`${prev}${prev}`];
+  for(let i=1;i<s.length;i++){
+    let ch=s[i];
+    if(ch==='0'){ ch=prev; }
+    else if(ch==='5'){ const next=(i+1<s.length)?s[i+1]:prev; ch=next; } // peek
+    pairs.push(`${prev}${ch}`); prev=ch;
+  }
+  return pairs;
+}
+
+/* ===== 身分證：計算並渲染 ===== */
+document.getElementById('goID').addEventListener('click',()=>{
+  const idn=document.getElementById('idn').value.trim();
+  const birth=document.getElementById('birth').value;
+  if(!idn||!birth){alert('請輸入身分證與出生日期');return;}
+  const all=buildPairsFromID(idn);
+  const pairs=(all.length>=10)?all.slice(0,10):[...all,...Array(10-all.length).fill(all.at(-1)||"11")];
   const names=pairs.map(p=>FIELD[p]||"—");
-  document.getElementById('headlineID').textContent="pairs："+JSON.stringify(pairs);
-  const tb=document.getElementById('tbodyID');tb.innerHTML="";pairs.forEach((p,i)=>{tb.innerHTML+=`<tr><td>${i}</td><td>${p}</td><td>${FIELD[p]||"—"}</td></tr>`});
-  document.getElementById('resultID').style.display="block";runDebugIfOpen(idn);
+  const age=calcAge(birth); const bidx=bucketIdx(age); if(bidx===-1){alert('支援年齡 0–70');return;}
+  const benming=countMode(names); const liunian=names[bidx];
+
+  document.getElementById('headlineID').innerHTML=
+    `<span class="badge">年齡 ${age}</span> <span class="badge">區間 ${BUCKETS[bidx]}</span> <span class="badge">本命 ${benming}</span> <span class="badge">流年 ${liunian}</span>`;
+
+  // 彩色 chips（10 段）
+  document.getElementById('chipsID').innerHTML = names.map(n=>chip(n)).join("");
+
+  // 表格
+  const tb=document.getElementById('tbodyID'); tb.innerHTML="";
+  for(let i=0;i<10;i++){
+    const nm=names[i];
+    tb.innerHTML+=`<tr><td>${BUCKETS[i]}</td><td>${pairs[i]}</td><td>${chip(nm)}</td><td>${TRAIT[nm]||''}</td></tr>`;
+  }
+
+  // 統計長條
+  const st=computeStats(names);
+  renderStats('statsID', st);
+
+  document.getElementById('resultID').style.display='block';
+  document.getElementById('resultNum').style.display='none';
+  runDebugIfOpen(idn);
+});
+document.getElementById('resetID').addEventListener('click',()=>{
+  document.getElementById('idn').value='';document.getElementById('birth').value='';
+  document.getElementById('resultID').style.display='none';
+});
+
+/* ===== 純數字：計算並渲染 + A~I 表 ===== */
+const AI_ROWS=[
+  {cat:'A', name:'伏位', desc:'五行平衡/守成'},
+  {cat:'B', name:'延年', desc:'續航/現金流延續'},
+  {cat:'C', name:'生氣', desc:'貴人/機運'},
+  {cat:'D', name:'天醫', desc:'正財/財庫'},
+  {cat:'E', name:'禍害', desc:'口舌/小人/健康干擾'},
+  {cat:'F', name:'六煞', desc:'感情/家庭牽動財務'},
+  {cat:'G', name:'絕命', desc:'起伏大/投資風險'},
+  {cat:'H', name:'五鬼', desc:'偏財/反轉'},
+  {cat:'I', name:'伏位', desc:'保守策略/穩定中求財'}
+];
+function renderAI(counts){
+  const tb=document.getElementById('aiBody'); tb.innerHTML='';
+  const max = Math.max(...AI_ROWS.map(r=>counts[r.name]||0));
+  AI_ROWS.forEach(r=>{
+    const c=counts[r.name]||0; const hit = (c===max && c>0)?'hit':'';
+    tb.innerHTML+=`<tr class="${hit}"><td>${r.cat}</td><td>${chip(r.name)}</td><td class="c"><b>${c}</b></td><td>${r.desc}</td></tr>`;
+  });
+}
+document.getElementById('goNum').addEventListener('click',()=>{
+  const raw=document.getElementById('numStr').value.trim(); if(!raw){alert('請輸入純數字');return;}
+  const pairs=buildPairsFromNumber(raw);
+  const names=pairs.map(p=>FIELD[p]||"—");
+
+  // 表格
+  const tb=document.getElementById('tbodyNum'); tb.innerHTML="";
+  names.forEach((n,i)=>{tb.innerHTML+=`<tr><td>第${i+1}段</td><td>${pairs[i]}</td><td>${chip(n)}</td><td>${TRAIT[n]||''}</td></tr>`});
+
+  // KPI + 統計長條
+  const st=computeStats(names);
+  document.getElementById('headlineNum').innerHTML =
+    `<span class="badge">總段數 ${pairs.length}</span> <span class="badge">主命 ${st.most}</span>`;
+  renderStats('statsNum', st);
+
+  // A~I 表（按命格名稱彙總）
+  renderAI(st.counts);
+
+  document.getElementById('resultNum').style.display='block';
+  document.getElementById('resultID').style.display='none';
+  runDebugIfOpen(raw);
+});
+document.getElementById('resetNum').addEventListener('click',()=>{
+  document.getElementById('numStr').value='';document.getElementById('resultNum').style.display='none';
+});
+
+/* ===== Tabs ===== */
+function setTab(which){
+  if(which==='id'){document.getElementById('tab-id').classList.add('active');document.getElementById('tab-num').classList.remove('active');document.getElementById('pane-id').classList.remove('hide');document.getElementById('pane-num').classList.add('hide');document.getElementById('resultNum').style.display='none';}
+  else{document.getElementById('tab-num').classList.add('active');document.getElementById('tab-id').classList.remove('active');document.getElementById('pane-num').classList.remove('hide');document.getElementById('pane-id').classList.add('hide');document.getElementById('resultID').style.display='none';}
+}
+document.getElementById('tab-id').onclick=()=>setTab('id');
+document.getElementById('tab-num').onclick=()=>setTab('num');
+
+/* ===== 除錯面板（規則可切換） ===== */
+document.getElementById('debugToggle').onclick=()=>{
+  const p=document.getElementById('debugPanel');
+  p.style.display = (p.style.display==='none'||!p.style.display)?'block':'none';
 };
-document.getElementById('resetID').onclick=()=>{document.getElementById('idn').value="";document.getElementById('birth').value="";document.getElementById('resultID').style.display="none";}
-
-// === 純數字計算 ===
-document.getElementById('goNum').onclick=()=>{
-  const num=document.getElementById('numStr').value.trim();if(!num){alert("請輸入數字");return;}
-  const pairs=buildPairs(num);const tb=document.getElementById('tbodyNum');tb.innerHTML="";pairs.forEach((p,i)=>{tb.innerHTML+=`<tr><td>${i}</td><td>${p}</td><td>${FIELD[p]||"—"}</td></tr>`});
-  document.getElementById('headlineNum').textContent="pairs："+JSON.stringify(pairs);
-  document.getElementById('resultNum').style.display="block";runDebugIfOpen(num);
-};
-document.getElementById('resetNum').onclick=()=>{document.getElementById('numStr').value="";document.getElementById('resultNum').style.display="none";}
-
-// === Tabs ===
-document.getElementById('tab-id').onclick=()=>{document.getElementById('tab-id').classList.add("active");document.getElementById('tab-num').classList.remove("active");document.getElementById('pane-id').classList.remove("hide");document.getElementById('pane-num').classList.add("hide");}
-document.getElementById('tab-num').onclick=()=>{document.getElementById('tab-num').classList.add("active");document.getElementById('tab-id').classList.remove("active");document.getElementById('pane-num').classList.remove("hide");document.getElementById('pane-id').classList.add("hide");}
-
-// === Debug ===
-document.getElementById('debugToggle').onclick=()=>{const p=document.getElementById('debugPanel');p.style.display=(p.style.display==='none'?'block':'none');}
 function getRadio(name){const el=document.querySelector(`input[name="${name}"]:checked`);return el?el.value:null;}
 function buildDebugSteps(input, r0,r5,rA){
-  const s=input.toUpperCase();const steps=[],pairs=[];let prev=null;
-  let i=0;
-  if(/[A-Z]/.test(s[0])){let init=(rA==='10'?'10':letterTo11(s[0]));pairs.push(init);prev=init[1];i=1;}
+  const s=(input||"").toUpperCase().replace(/\s+/g,"");const pairs=[];let prev=null;let i=0;
+  if(/[A-Z]/.test(s[0])){const init=(rA==='10'?'10':letterTo11(s[0]));pairs.push(init);prev=init[1];i=1;}
   else if(/\d/.test(s[0])){prev=s[0];pairs.push(prev+prev);i=1;}
-  for(;i<s.length;i++){const ch=s[i];if(!/\d/.test(ch))continue;let second,chUsed=ch,peek=false,consume=false;
-    if(ch==='0'){if(r0==='00'){pairs.push("00");continue;}else second=prev;}
-    else if(ch==='5'){const next=(i+1<s.length)?s[i+1]:prev;if(r5==='peek'){second=next;peek=true;}else{second=next;consume=true;i++;prev=next;}}
-    else{second=ch;prev=ch;}
-    pairs.push(prev+second);}
-  return {pairs,steps:[]};}
-function renderDebug(input,pairs){
-  const rows=pairs.map((p,i)=>`<tr><td>${i}</td><td>${p}</td><td>${FIELD[p]||"—"}</td></tr>`).join('');
-  document.getElementById('debugTable').innerHTML=`<div class="muted">輸入：<code>${input}</code></div>
-    <table><thead><tr><th>#</th><th>pair</th><th>命名</th></tr></thead><tbody>${rows}</tbody></table>`;
+  for(;i<s.length;i++){
+    let ch=s[i]; if(!/\d/.test(ch))continue;
+    if(ch==='0'){ if(r0==='00'){pairs.push("00");continue;} ch=prev; }
+    else if(ch==='5'){ const next=(i+1<s.length&&/\d/.test(s[i+1]))?s[i+1]:prev; if(r5==='peek'){ ch=next; } else { ch=next; i++; prev=next; } }
+    pairs.push(prev+ch); prev=ch;
+  }
+  return pairs;
 }
-function runDebugIfOpen(val){const p=document.getElementById('debugPanel');if(p.style.display!=='block')return;const r0=getRadio('r0')||'repeat',r5=getRadio('r5')||'peek',rA=getRadio('rA')||'11';const {pairs}=buildDebugSteps(val,r0,r5,rA);renderDebug(val,pairs);}
+function renderDebug(val,pairs){
+  const rows=pairs.map((p,i)=>`<tr><td>${i}</td><td>${p}</td><td>${FIELD[p]||'—'}</td></tr>`).join('');
+  document.getElementById('debugTable').innerHTML =
+    `<div class="muted">輸入：<span class="mono">${val}</span></div>
+     <table><thead><tr><th>#</th><th>pair</th><th>命名</th></tr></thead><tbody>${rows}</tbody></table>
+     <div class="muted" style="margin-top:6px">pairs：<span class="mono">${JSON.stringify(pairs)}</span></div>`;
+}
+function runDebugIfOpen(val){
+  const p=document.getElementById('debugPanel'); if(p.style.display!=='block')return;
+  const r0=getRadio('r0')||'repeat', r5=getRadio('r5')||'peek', rA=getRadio('rA')||'11';
+  const pairs=buildDebugSteps(val,r0,r5,rA); renderDebug(val,pairs);
+}
 </script>
 </body>
 </html>

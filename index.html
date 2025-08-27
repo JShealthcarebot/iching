@@ -1,140 +1,153 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>[ 易經數字 ] 含除錯版</title>
+<style>
+:root{
+  --bg:#eef9f7;--card:#fff;--text:#0f2a26;--muted:#5e7b75;--accent:#0f8f86;--border:#cfe8e3;
+}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"Inter","Noto Sans TC","Microsoft JhengHei",sans-serif;line-height:1.6}
+.wrap{max-width:980px;margin:28px auto;padding:0 14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+h1{margin:0 0 14px;text-align:center;color:var(--accent)}
+label{font-size:14px;color:var(--muted);display:block;margin-bottom:4px}
+input{width:100%;padding:12px;border:1px solid var(--border);border-radius:10px}
+.btn{padding:10px 14px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+.btn.secondary{background:#0f2a26}
+.tabs{display:flex;gap:8px;justify-content:center;margin-bottom:10px}
+.tab{padding:8px 12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;color:var(--muted)}
+.tab.active{background:var(--accent);color:#fff}
+.hide{display:none}
+table{width:100%;border-collapse:collapse;margin-top:8px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--border);font-size:14px}
+thead th{background:#f5fbfa}
+.badge{display:inline-block;background:#e7f6f4;border:1px solid var(--border);border-radius:999px;padding:2px 8px;margin-right:6px;font-size:13px}
+.muted{color:var(--muted);font-size:13px}
+.mono{font-family:ui-monospace,monospace}
+#debugPanel .opt{margin:6px 0;color:var(--muted)}
+#debugTable table{width:100%;border-collapse:collapse;margin-top:6px}
+#debugTable th,#debugTable td{padding:6px 8px;border-bottom:1px solid var(--border);font-size:13px}
+#debugTable thead th{background:#fafafa}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>[ 易經數字 ]</h1>
+    <div class="tabs">
+      <div id="tab-id" class="tab active">身分證＋生日</div>
+      <div id="tab-num" class="tab">純數字</div>
+    </div>
+    <!-- 身分證 -->
+    <div id="pane-id">
+      <label>身分證號</label><input id="idn" placeholder="例如 A123456789"/>
+      <label style="margin-top:8px">出生日期</label><input id="birth" type="date"/>
+      <div style="margin-top:10px">
+        <button id="goID" class="btn">計算</button>
+        <button id="resetID" class="btn secondary">重設</button>
+      </div>
+    </div>
+    <!-- 純數字 -->
+    <div id="pane-num" class="hide">
+      <label>純數字</label><input id="numStr" placeholder="例如 11220587476 或更長"/>
+      <div style="margin-top:10px">
+        <button id="goNum" class="btn">計算</button>
+        <button id="resetNum" class="btn secondary">重設</button>
+      </div>
+    </div>
+    <button id="debugToggle" class="btn secondary" style="margin-top:12px">顯示除錯</button>
+    <div id="debugPanel" style="display:none;margin-top:12px">
+      <div class="opt"><b>0 規則</b>　
+        <label><input type="radio" name="r0" value="repeat" checked> 重複前碼</label>
+        <label><input type="radio" name="r0" value="00"> 固定 00</label>
+      </div>
+      <div class="opt"><b>5 規則</b>　
+        <label><input type="radio" name="r5" value="peek" checked> peek</label>
+        <label><input type="radio" name="r5" value="consume"> consume</label>
+      </div>
+      <div class="opt"><b>字母起始</b>　
+        <label><input type="radio" name="rA" value="11" checked> A→11</label>
+        <label><input type="radio" name="rA" value="10"> A→10</label>
+      </div>
+      <div id="debugTable" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <!-- 結果 -->
+  <div id="resultID" class="card" style="display:none">
+    <div id="headlineID" class="muted"></div>
+    <table><thead><tr><th>區間</th><th>pair</th><th>命名</th></tr></thead><tbody id="tbodyID"></tbody></table>
+  </div>
+  <div id="resultNum" class="card" style="display:none">
+    <div id="headlineNum" class="muted"></div>
+    <table><thead><tr><th>#</th><th>pair</th><th>命名</th></tr></thead><tbody id="tbodyNum"></tbody></table>
+  </div>
+</div>
+
 <script>
-// === 八宅對照（你原本若已定義 FIELD 會沿用這個外的，不會覆寫） ===
-if(typeof FIELD==="undefined"){
-  window.FIELD={
-    11:"伏位",19:"延年",14:"生氣",13:"天醫",17:"禍害",16:"六煞",12:"絕命",18:"五鬼",
-    22:"伏位",26:"延年",28:"生氣",27:"天醫",23:"禍害",29:"六煞",21:"絕命",24:"五鬼",
-    33:"伏位",34:"延年",39:"生氣",31:"天醫",32:"禍害",38:"六煞",37:"絕命",36:"五鬼",
-    44:"伏位",43:"延年",41:"生氣",49:"天醫",46:"禍害",47:"六煞",48:"絕命",42:"五鬼",
-    66:"伏位",62:"延年",67:"生氣",68:"天醫",64:"禍害",61:"六煞",69:"絕命",63:"五鬼",
-    77:"伏位",78:"延年",76:"生氣",72:"天醫",71:"禍害",74:"六煞",73:"絕命",79:"五鬼",
-    88:"伏位",87:"延年",82:"生氣",86:"天醫",89:"禍害",83:"六煞",84:"絕命",81:"五鬼",
-    99:"伏位",91:"延年",93:"生氣",94:"天醫",98:"禍害",92:"六煞",96:"絕命",97:"五鬼",
-  };
-}
+// === 八宅對照表 ===
+const FIELD={11:"伏位",12:"絕命",13:"天醫",14:"生氣",16:"六煞",17:"禍害",18:"五鬼",19:"延年",
+22:"伏位",23:"禍害",24:"五鬼",26:"延年",27:"天醫",28:"生氣",29:"六煞",21:"絕命",
+33:"伏位",34:"延年",36:"五鬼",37:"絕命",38:"六煞",39:"生氣",31:"天醫",32:"禍害",
+44:"伏位",43:"延年",41:"生氣",49:"天醫",46:"禍害",47:"六煞",48:"絕命",42:"五鬼",
+66:"伏位",62:"延年",67:"生氣",68:"天醫",64:"禍害",61:"六煞",69:"絕命",63:"五鬼",
+77:"伏位",78:"延年",76:"生氣",72:"天醫",71:"禍害",74:"六煞",73:"絕命",79:"五鬼",
+88:"伏位",87:"延年",82:"生氣",86:"天醫",89:"禍害",83:"六煞",84:"絕命",81:"五鬼",
+99:"伏位",91:"延年",92:"六煞",93:"生氣",94:"天醫",98:"禍害",96:"絕命",97:"五鬼"};
 
-// 字母對應 11 表（A=11, B=12 ... I=19, J=21 ...）
-function letterTo11(ch){
-  const code=ch.toUpperCase().charCodeAt(0);
-  if(code<65||code>90) return null;
-  const n=code-64; // A=1
-  const tens = Math.floor((n-1)/9) + 1;
-  const ones = ((n-1)%9) + 1;
-  return `${tens}${ones}`; // A=11, B=12, ... I=19, J=21 ...
-}
+// === 基本函式 ===
+function letterTo11(ch){const n=ch.toUpperCase().charCodeAt(0)-64;const t=Math.floor((n-1)/9)+1;const o=((n-1)%9)+1;return `${t}${o}`;}
+function buildPairs(raw){const s=raw.replace(/\D+/g,"");if(!s)return[];let prev=s[0],pairs=[prev+prev];for(let i=1;i<s.length;i++){let ch=s[i];if(ch==="0")ch=prev;if(ch==="5"){let next=(i+1<s.length)?s[i+1]:prev;ch=next;}pairs.push(prev+ch);prev=ch;}return pairs;}
 
-// 取 radio 值
-function getRadio(name){ const el=document.querySelector(`input[name="${name}"]:checked`); return el?el.value:null; }
-
-// 除錯核心：回傳 {pairs, steps}
-function buildDebugSteps(input, rule0, rule5, ruleA){
-  const s=(input||"").toUpperCase().replace(/\s+/g,"");
-  const steps=[], pairs=[];
-  if(!s) return {pairs,steps};
-
-  // 起始 pair（字母）
-  let initPair="";
-  if(/[A-Z]/.test(s[0])){
-    initPair = (ruleA==='10') ? "10" : (letterTo11(s[0])||"11");
-  }else if(/[0-9]/.test(s[0])){
-    // 純數字：以首碼重複起頭（與你現有純數字規則一致）
-    initPair = s[0]+s[0];
-  }else{
-    initPair="11";
-  }
-  pairs.push(initPair);
-  let prev = initPair[1];
-
-  // 逐字處理
-  for(let i=1;i<s.length;i++){
-    const ch=s[i];
-    if(!/[0-9]/.test(ch)) continue;
-
-    const beforePrev = prev;
-    let usedChar = ch;
-    let second = null;
-    let consumed = false;
-    let peeked   = false;
-
-    if(ch==='0'){
-      if(rule0==='00'){
-        pairs.push('00');
-        steps.push({i, char:ch, beforePrev, afterPrev:prev, peek:false, consume:false, pair:'00', name:FIELD['00']||'—'});
-        continue; // prev 不動
-      }else{
-        second = beforePrev; // repeat
-        // prev 不動
-      }
-    }else if(ch==='5'){
-      const next = (i+1<s.length && /\d/.test(s[i+1])) ? s[i+1] : beforePrev;
-      if(rule5==='peek'){
-        second = next;       // 看下一碼，但不吃
-        peeked = true;
-        // prev 不動
-      }else{ // consume
-        second = next;
-        consumed = (next!==beforePrev); // 有真吃到下一碼才算
-        if(consumed) { prev = next; i++; } // 吃掉下一碼且前進
-      }
-    }else{
-      second = ch; // 正常數字
-      prev = ch;
-    }
-
-    const pair = (second==null) ? (beforePrev+beforePrev) : (beforePrev + second);
-    pairs.push(pair);
-    steps.push({
-      i, char:usedChar, beforePrev, afterPrev:prev,
-      peek:peeked, consume:consumed, pair, name:FIELD[pair]||'—'
-    });
-  }
-
-  return {pairs,steps};
-}
-
-// 渲染表
-function renderDebug(input, pairs, steps){
-  const rows = steps.map(s=>`
-    <tr>
-      <td>${s.i}</td>
-      <td>${s.char}</td>
-      <td>${s.beforePrev}</td>
-      <td>${s.afterPrev}</td>
-      <td>${s.peek?'✓':''}</td>
-      <td>${s.consume?'✓':''}</td>
-      <td>${s.pair}</td>
-      <td>${s.name}</td>
-    </tr>`).join('');
-
-  document.getElementById('debugTable').innerHTML = `
-    <div class="muted">輸入：<code>${input||'（空）'}</code></div>
-    <table>
-      <thead><tr>
-        <th>#</th><th>字</th><th>prev(前)</th><th>prev(後)</th>
-        <th>peek</th><th>eat</th><th>pair</th><th>命名</th>
-      </tr></thead>
-      <tbody>${rows||'<tr><td colspan="8" class="muted">—</td></tr>'}</tbody>
-    </table>
-    <div style="margin-top:8px" class="muted">最後 pair 串列：<code>${JSON.stringify(pairs)}</code></div>
-  `;
-}
-
-// 事件：開關面板
-document.getElementById('debugToggle').addEventListener('click', ()=>{
-  const p=document.getElementById('debugPanel');
-  p.style.display = (p.style.display==='none' || !p.style.display) ? 'block' : 'none';
-});
-
-// 提供給你的主流程呼叫：把「使用者輸入的原字串」塞進來即可
-window.runDebugIfOpen = function(rawInput){
-  const panel = document.getElementById('debugPanel');
-  if(!panel || panel.style.display!=='block') return;
-
-  const r0 = getRadio('r0') || 'repeat';
-  const r5 = getRadio('r5') || 'peek';
-  const rA = getRadio('rA') || '11';
-
-  const {pairs,steps} = buildDebugSteps(rawInput, r0, r5, rA);
-  renderDebug(rawInput, pairs, steps);
+// === 身分證計算 ===
+document.getElementById('goID').onclick=()=>{
+  const idn=document.getElementById('idn').value.trim().toUpperCase();
+  if(!idn||!/[A-Z]/.test(idn[0])){alert("需輸入身分證號");return;}
+  const init=letterTo11(idn[0]);let pairs=[init],prev=init[1];
+  for(let i=1;i<idn.length;i++){let ch=idn[i];if(!/\d/.test(ch))continue;if(ch==="0")ch=prev;if(ch==="5"){let next=(i+1<idn.length)?idn[i+1]:prev;ch=next;}pairs.push(prev+ch);prev=ch;}
+  const names=pairs.map(p=>FIELD[p]||"—");
+  document.getElementById('headlineID').textContent="pairs："+JSON.stringify(pairs);
+  const tb=document.getElementById('tbodyID');tb.innerHTML="";pairs.forEach((p,i)=>{tb.innerHTML+=`<tr><td>${i}</td><td>${p}</td><td>${FIELD[p]||"—"}</td></tr>`});
+  document.getElementById('resultID').style.display="block";runDebugIfOpen(idn);
 };
+document.getElementById('resetID').onclick=()=>{document.getElementById('idn').value="";document.getElementById('birth').value="";document.getElementById('resultID').style.display="none";}
+
+// === 純數字計算 ===
+document.getElementById('goNum').onclick=()=>{
+  const num=document.getElementById('numStr').value.trim();if(!num){alert("請輸入數字");return;}
+  const pairs=buildPairs(num);const tb=document.getElementById('tbodyNum');tb.innerHTML="";pairs.forEach((p,i)=>{tb.innerHTML+=`<tr><td>${i}</td><td>${p}</td><td>${FIELD[p]||"—"}</td></tr>`});
+  document.getElementById('headlineNum').textContent="pairs："+JSON.stringify(pairs);
+  document.getElementById('resultNum').style.display="block";runDebugIfOpen(num);
+};
+document.getElementById('resetNum').onclick=()=>{document.getElementById('numStr').value="";document.getElementById('resultNum').style.display="none";}
+
+// === Tabs ===
+document.getElementById('tab-id').onclick=()=>{document.getElementById('tab-id').classList.add("active");document.getElementById('tab-num').classList.remove("active");document.getElementById('pane-id').classList.remove("hide");document.getElementById('pane-num').classList.add("hide");}
+document.getElementById('tab-num').onclick=()=>{document.getElementById('tab-num').classList.add("active");document.getElementById('tab-id').classList.remove("active");document.getElementById('pane-num').classList.remove("hide");document.getElementById('pane-id').classList.add("hide");}
+
+// === Debug ===
+document.getElementById('debugToggle').onclick=()=>{const p=document.getElementById('debugPanel');p.style.display=(p.style.display==='none'?'block':'none');}
+function getRadio(name){const el=document.querySelector(`input[name="${name}"]:checked`);return el?el.value:null;}
+function buildDebugSteps(input, r0,r5,rA){
+  const s=input.toUpperCase();const steps=[],pairs=[];let prev=null;
+  let i=0;
+  if(/[A-Z]/.test(s[0])){let init=(rA==='10'?'10':letterTo11(s[0]));pairs.push(init);prev=init[1];i=1;}
+  else if(/\d/.test(s[0])){prev=s[0];pairs.push(prev+prev);i=1;}
+  for(;i<s.length;i++){const ch=s[i];if(!/\d/.test(ch))continue;let second,chUsed=ch,peek=false,consume=false;
+    if(ch==='0'){if(r0==='00'){pairs.push("00");continue;}else second=prev;}
+    else if(ch==='5'){const next=(i+1<s.length)?s[i+1]:prev;if(r5==='peek'){second=next;peek=true;}else{second=next;consume=true;i++;prev=next;}}
+    else{second=ch;prev=ch;}
+    pairs.push(prev+second);}
+  return {pairs,steps:[]};}
+function renderDebug(input,pairs){
+  const rows=pairs.map((p,i)=>`<tr><td>${i}</td><td>${p}</td><td>${FIELD[p]||"—"}</td></tr>`).join('');
+  document.getElementById('debugTable').innerHTML=`<div class="muted">輸入：<code>${input}</code></div>
+    <table><thead><tr><th>#</th><th>pair</th><th>命名</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+function runDebugIfOpen(val){const p=document.getElementById('debugPanel');if(p.style.display!=='block')return;const r0=getRadio('r0')||'repeat',r5=getRadio('r5')||'peek',rA=getRadio('rA')||'11';const {pairs}=buildDebugSteps(val,r0,r5,rA);renderDebug(val,pairs);}
 </script>
+</body>
+</html>

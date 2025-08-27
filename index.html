@@ -1,272 +1,140 @@
-<!doctype html>
-<html lang="zh-Hant">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>易經數字｜除錯版</title>
-<style>
-  :root{
-    --bg:#eef9f7;--card:#fff;--text:#0f2a26;--muted:#5e7b75;--accent:#0f8f86;--border:#cfe8e3;
-  }
-  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Roboto,Arial,"Microsoft JhengHei",sans-serif}
-  .wrap{max-width:1100px;margin:28px auto;padding:0 14px}
-  h1{margin:8px 0 16px;color:var(--accent);letter-spacing:.5px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 14px 4px;margin-bottom:14px}
-  .row{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
-  .row>*{flex:1 1 260px}
-  label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-  input,select{width:100%;padding:12px 12px;border:1px solid var(--border);border-radius:10px;background:#fff}
-  .opts{display:flex;gap:18px;flex-wrap:wrap}
-  .opt{border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#fafefd}
-  .btn{padding:12px 16px;border:none;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
-  .btn.secondary{background:#0f2a26}
-  table{width:100%;border-collapse:collapse;margin-top:10px}
-  th,td{border-bottom:1px solid var(--border);padding:8px 10px;font-size:14px;vertical-align:top}
-  thead th{background:#f5fbfa}
-  .pill{display:inline-block;background:#e9f5f3;border:1px solid var(--border);border-radius:999px;padding:4px 10px;margin-right:6px}
-  .muted{color:var(--muted)}
-  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-  .ok{color:#107869;font-weight:700}
-  .warn{color:#c2410c;font-weight:700}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  @media (max-width:820px){.grid2{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>易經數字｜除錯版</h1>
-
-  <div class="card">
-    <div class="grid2">
-      <div>
-        <label>輸入（可填身分證或純數字）</label>
-        <input id="inp" placeholder="例如：A229156253 或 28881808192771" />
-      </div>
-      <div class="opts">
-        <div class="opt">
-          <div class="muted" style="margin-bottom:6px">0 的規則</div>
-          <label><input type="radio" name="r0" value="repeat" checked> 重複前碼（prev）</label><br/>
-          <label><input type="radio" name="r0" value="00"> 固定 00</label>
-        </div>
-        <div class="opt">
-          <div class="muted" style="margin-bottom:6px">5 的規則</div>
-          <label><input type="radio" name="r5" value="peek" checked> 同化下一碼（peek，不吃）</label><br/>
-          <label><input type="radio" name="r5" value="consume"> 同化並吃掉下一碼（consume）</label>
-        </div>
-        <div class="opt">
-          <div class="muted" style="margin-bottom:6px">字母起始</div>
-          <label><input type="radio" name="rA" value="11" checked> A → 11（十位=1、個位=1）</label><br/>
-          <label><input type="radio" name="rA" value="10"> A → 10（十位=1、個位=0）</label>
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <button class="btn" id="go">計算 & 顯示步驟</button>
-      <button class="btn secondary" id="reset">重設</button>
-    </div>
-    <div class="muted">
-      除錯用途：可切換 0/5/字母規則，逐步檢視「前碼 prev」與 pair 的形成，與其他網站比對差異。
-    </div>
-  </div>
-
-  <div class="card" id="result" style="display:none">
-    <div id="headline" style="margin-bottom:8px"></div>
-    <div id="pairsLine" class="mono" style="overflow:auto;white-space:nowrap"></div>
-
-    <table>
-      <thead>
-        <tr>
-          <th style="width:70px">步</th>
-          <th style="width:70px">原字</th>
-          <th style="width:90px">prev(前)</th>
-          <th style="width:90px">prev(後)</th>
-          <th style="width:120px">動作</th>
-          <th style="width:90px">peek值</th>
-          <th style="width:90px">pair</th>
-          <th style="width:120px">命名</th>
-          <th>備註</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-
-    <div style="margin:10px 0 6px"><span class="muted">最後 pair 串列：</span>
-      <span id="pairsFinal" class="mono"></span>
-    </div>
-  </div>
-</div>
-
 <script>
-/* === 八宅對照 === */
-const FIELD={
-  11:"伏位",19:"延年",14:"生氣",13:"天醫",17:"禍害",16:"六煞",12:"絕命",18:"五鬼",
-  22:"伏位",26:"延年",28:"生氣",27:"天醫",23:"禍害",29:"六煞",21:"絕命",24:"五鬼",
-  33:"伏位",34:"延年",39:"生氣",31:"天醫",32:"禍害",38:"六煞",37:"絕命",36:"五鬼",
-  44:"伏位",43:"延年",41:"生氣",49:"天醫",46:"禍害",47:"六煞",48:"絕命",42:"五鬼",
-  66:"伏位",62:"延年",67:"生氣",68:"天醫",64:"禍害",61:"六煞",69:"絕命",63:"五鬼",
-  77:"伏位",78:"延年",76:"生氣",72:"天醫",71:"禍害",74:"六煞",73:"絕命",79:"五鬼",
-  88:"伏位",87:"延年",82:"生氣",86:"天醫",89:"禍害",83:"六煞",84:"絕命",81:"五鬼",
-  99:"伏位",91:"延年",93:"生氣",94:"天醫",98:"禍害",92:"六煞",96:"絕命",97:"五鬼",
-};
-function mapName(pair){ return FIELD[+pair] || "—"; }
-
-/* === 字母轉起始 === */
-function letterPair(letter, modeA){
-  const up=letter.toUpperCase(); const code=up.charCodeAt(0);
-  if(code<65||code>90) return null;
-  if(modeA==="10"){ // 起始個位=0 的版本
-    const tens=1, ones=0; return `${tens}${ones}`;
-  }else{ // modeA==="11"（常見）
-    // A=1 → 11；B=2 → 12 ... 以 1~9 循環填十位與個位
-    const n=code-64; const tens=Math.floor((n-1)/9)+1; const ones=((n-1)%9)+1;
-    return `${tens}${ones}`;
-  }
+// === 八宅對照（你原本若已定義 FIELD 會沿用這個外的，不會覆寫） ===
+if(typeof FIELD==="undefined"){
+  window.FIELD={
+    11:"伏位",19:"延年",14:"生氣",13:"天醫",17:"禍害",16:"六煞",12:"絕命",18:"五鬼",
+    22:"伏位",26:"延年",28:"生氣",27:"天醫",23:"禍害",29:"六煞",21:"絕命",24:"五鬼",
+    33:"伏位",34:"延年",39:"生氣",31:"天醫",32:"禍害",38:"六煞",37:"絕命",36:"五鬼",
+    44:"伏位",43:"延年",41:"生氣",49:"天醫",46:"禍害",47:"六煞",48:"絕命",42:"五鬼",
+    66:"伏位",62:"延年",67:"生氣",68:"天醫",64:"禍害",61:"六煞",69:"絕命",63:"五鬼",
+    77:"伏位",78:"延年",76:"生氣",72:"天醫",71:"禍害",74:"六煞",73:"絕命",79:"五鬼",
+    88:"伏位",87:"延年",82:"生氣",86:"天醫",89:"禍害",83:"六煞",84:"絕命",81:"五鬼",
+    99:"伏位",91:"延年",93:"生氣",94:"天醫",98:"禍害",92:"六煞",96:"絕命",97:"五鬼",
+  };
 }
 
-/* === 主計算：回傳步驟陣列 + 最終 pairs ===
-  規則：
-   - 0 : repeat → second = prev；00 → 固定 "00"
-   - 5 : peek → second = 下一碼但不消耗；consume → 取下一碼並 i++（吃掉）
-   - 其餘數字：second = 該數字；並 prev = 該數字
-*/
-function buildDebugSteps(input, rule0, rule5, modeA){
-  const s = String(input).trim();
-  const steps=[];
-  let pairs=[];
-  let prev=null;
-  let i=0;
+// 字母對應 11 表（A=11, B=12 ... I=19, J=21 ...）
+function letterTo11(ch){
+  const code=ch.toUpperCase().charCodeAt(0);
+  if(code<65||code>90) return null;
+  const n=code-64; // A=1
+  const tens = Math.floor((n-1)/9) + 1;
+  const ones = ((n-1)%9) + 1;
+  return `${tens}${ones}`; // A=11, B=12, ... I=19, J=21 ...
+}
 
-  // 若第一碼是英文字母，先給起始 pair，並設定 prev
-  if(/[A-Za-z]/.test(s[0])){
-    const p = letterPair(s[0], modeA);
-    if(!p) return {steps:[], pairs:[]};
-    pairs.push(p); prev = p[1];
-    steps.push({
-      idx:0, ch:s[0], prevBefore:null, prevAfter:prev, action:`字母起始 ${s[0]}→${p}`,
-      peek:null, pair:p, name:mapName(p), note:""
-    });
-    i = 1; // 從下一位開始處理
+// 取 radio 值
+function getRadio(name){ const el=document.querySelector(`input[name="${name}"]:checked`); return el?el.value:null; }
+
+// 除錯核心：回傳 {pairs, steps}
+function buildDebugSteps(input, rule0, rule5, ruleA){
+  const s=(input||"").toUpperCase().replace(/\s+/g,"");
+  const steps=[], pairs=[];
+  if(!s) return {pairs,steps};
+
+  // 起始 pair（字母）
+  let initPair="";
+  if(/[A-Z]/.test(s[0])){
+    initPair = (ruleA==='10') ? "10" : (letterTo11(s[0])||"11");
+  }else if(/[0-9]/.test(s[0])){
+    // 純數字：以首碼重複起頭（與你現有純數字規則一致）
+    initPair = s[0]+s[0];
   }else{
-    // 純數字：第一段先做「dd」（前兩位）？或「第一碼自配 dd」？
-    // 你原本使用的是「第一碼自配 dd」（例如 2 → 22），這裡沿用
-    if(/\d/.test(s[0])){
-      prev = s[0];
-      const p = `${prev}${prev}`;
-      pairs.push(p);
-      steps.push({
-        idx:0, ch:s[0], prevBefore:null, prevAfter:prev, action:"起始（第一碼自配 dd）",
-        peek:null, pair:p, name:mapName(p), note:""
-      });
-      i = 1;
-    }else{
-      // 非數字非字母，忽略
-      i = 1;
-    }
+    initPair="11";
   }
+  pairs.push(initPair);
+  let prev = initPair[1];
 
   // 逐字處理
-  for(let step=1; i<s.length; step++, i++){
+  for(let i=1;i<s.length;i++){
     const ch=s[i];
-    if(!/\d/.test(ch)){ // 跳過非數字
-      steps.push({idx:step, ch, prevBefore:prev, prevAfter:prev, action:"非數字，忽略", peek:null, pair:"—", name:"—", note:""});
-      continue;
-    }
-    const prevBefore = prev;
-    let action="", peekVal=null, pair="", prevAfter=prev;
+    if(!/[0-9]/.test(ch)) continue;
+
+    const beforePrev = prev;
+    let usedChar = ch;
+    let second = null;
+    let consumed = false;
+    let peeked   = false;
 
     if(ch==='0'){
       if(rule0==='00'){
-        pair="00"; action="0→固定 00"; // prev 不變
+        pairs.push('00');
+        steps.push({i, char:ch, beforePrev, afterPrev:prev, peek:false, consume:false, pair:'00', name:FIELD['00']||'—'});
+        continue; // prev 不動
       }else{
-        pair=`${prevBefore}${prevBefore}`; action="0→重複前碼";
+        second = beforePrev; // repeat
+        // prev 不動
       }
     }else if(ch==='5'){
+      const next = (i+1<s.length && /\d/.test(s[i+1])) ? s[i+1] : beforePrev;
       if(rule5==='peek'){
-        const next=(i+1<s.length && /\d/.test(s[i+1]))? s[i+1] : prevBefore;
-        peekVal = next;
-        pair = `${prevBefore}${next}`;
-        action = `5→peek 同化下一碼（不吃）`;
-        // prev 不變
+        second = next;       // 看下一碼，但不吃
+        peeked = true;
+        // prev 不動
       }else{ // consume
-        const next=(i+1<s.length && /\d/.test(s[i+1]))? s[i+1] : prevBefore;
-        peekVal = next;
-        pair = `${prevBefore}${next}`;
-        action = `5→consume 同化並吃掉下一碼`;
-        i++; // 吃掉下一碼
-        prevAfter = next;
-        prev = prevAfter;
+        second = next;
+        consumed = (next!==beforePrev); // 有真吃到下一碼才算
+        if(consumed) { prev = next; i++; } // 吃掉下一碼且前進
       }
     }else{
-      // 一般數字
-      pair = `${prevBefore}${ch}`;
-      action = "一般數字";
-      prevAfter = ch;
-      prev = prevAfter;
+      second = ch; // 正常數字
+      prev = ch;
     }
 
+    const pair = (second==null) ? (beforePrev+beforePrev) : (beforePrev + second);
     pairs.push(pair);
     steps.push({
-      idx:step, ch, prevBefore, prevAfter, action, peek:peekVal, pair, name:mapName(pair),
-      note:""
+      i, char:usedChar, beforePrev, afterPrev:prev,
+      peek:peeked, consume:consumed, pair, name:FIELD[pair]||'—'
     });
   }
 
-  return {steps, pairs};
+  return {pairs,steps};
 }
 
-/* === UI 綁定 === */
-const elInp = document.getElementById('inp');
-const elGo  = document.getElementById('go');
-const elReset = document.getElementById('reset');
-const elResult = document.getElementById('result');
-const elTbody = document.getElementById('tbody');
-const elPairsLine = document.getElementById('pairsLine');
-const elPairsFinal = document.getElementById('pairsFinal');
-const elHeadline = document.getElementById('headline');
+// 渲染表
+function renderDebug(input, pairs, steps){
+  const rows = steps.map(s=>`
+    <tr>
+      <td>${s.i}</td>
+      <td>${s.char}</td>
+      <td>${s.beforePrev}</td>
+      <td>${s.afterPrev}</td>
+      <td>${s.peek?'✓':''}</td>
+      <td>${s.consume?'✓':''}</td>
+      <td>${s.pair}</td>
+      <td>${s.name}</td>
+    </tr>`).join('');
 
-function getRadio(name){ return document.querySelector(`input[name="${name}"]:checked`).value; }
+  document.getElementById('debugTable').innerHTML = `
+    <div class="muted">輸入：<code>${input||'（空）'}</code></div>
+    <table>
+      <thead><tr>
+        <th>#</th><th>字</th><th>prev(前)</th><th>prev(後)</th>
+        <th>peek</th><th>eat</th><th>pair</th><th>命名</th>
+      </tr></thead>
+      <tbody>${rows||'<tr><td colspan="8" class="muted">—</td></tr>'}</tbody>
+    </table>
+    <div style="margin-top:8px" class="muted">最後 pair 串列：<code>${JSON.stringify(pairs)}</code></div>
+  `;
+}
 
-elGo.addEventListener('click', ()=>{
-  const val = elInp.value.trim();
-  if(!val){ alert('請先輸入身分證或純數字'); return; }
-  const r0 = getRadio('r0');      // repeat / 00
-  const r5 = getRadio('r5');      // peek / consume
-  const rA = getRadio('rA');      // 11 / 10
-
-  const {steps, pairs} = buildDebugSteps(val, r0, r5, rA);
-
-  // Headline
-  elHeadline.innerHTML =
-    `<span class="pill mono">輸入：${val}</span>
-     <span class="pill">0 規則：${r0}</span>
-     <span class="pill">5 規則：${r5}</span>
-     <span class="pill">字母起始：A→${rA}</span>`;
-
-  // 表格
-  elTbody.innerHTML = steps.map(st=>{
-    return `<tr>
-      <td>${st.idx}</td>
-      <td class="mono">${st.ch ?? ""}</td>
-      <td class="mono">${st.prevBefore ?? ""}</td>
-      <td class="mono">${st.prevAfter ?? ""}</td>
-      <td>${st.action}</td>
-      <td class="mono">${st.peek ?? ""}</td>
-      <td class="mono"><b>${st.pair}</b></td>
-      <td>${st.name}</td>
-      <td class="muted">${st.note||""}</td>
-    </tr>`;
-  }).join("");
-
-  elPairsLine.textContent = "pairs（含起始）：" + JSON.stringify(pairs);
-  elPairsFinal.textContent = JSON.stringify(pairs);
-  elResult.style.display = 'block';
+// 事件：開關面板
+document.getElementById('debugToggle').addEventListener('click', ()=>{
+  const p=document.getElementById('debugPanel');
+  p.style.display = (p.style.display==='none' || !p.style.display) ? 'block' : 'none';
 });
 
-elReset.addEventListener('click', ()=>{
-  elInp.value = "";
-  elResult.style.display = 'none';
-});
+// 提供給你的主流程呼叫：把「使用者輸入的原字串」塞進來即可
+window.runDebugIfOpen = function(rawInput){
+  const panel = document.getElementById('debugPanel');
+  if(!panel || panel.style.display!=='block') return;
+
+  const r0 = getRadio('r0') || 'repeat';
+  const r5 = getRadio('r5') || 'peek';
+  const rA = getRadio('rA') || '11';
+
+  const {pairs,steps} = buildDebugSteps(rawInput, r0, r5, rA);
+  renderDebug(rawInput, pairs, steps);
+};
 </script>
-</body>
-</html>

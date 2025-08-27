@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>[ 易經數字 ] 圖形化＋除錯</title>
+<title>[ 易經數字 ] 正式版</title>
 <style>
 :root{
   --bg:#e9fbf8;--card:#fff;--text:#0f2a26;--muted:#5e7b75;--accent:#0f8f86;--border:#cfe8e3;
@@ -42,9 +42,6 @@ tr:nth-child(2n) td{background:color-mix(in oklab, var(--bg) 60%, #fff 40%)}
 .statRow{display:flex;align-items:center;gap:8px;margin:6px 0}
 .statBar{flex:1;height:10px;border-radius:999px;background:var(--border);overflow:hidden}
 .statBar i{display:block;height:100%}
-.kpi{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-.kpi .box{flex:1 1 240px;border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:color-mix(in oklab, var(--accent) 6%, transparent)}
-
 .aiTable{border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:10px}
 .aiTable thead th{background:color-mix(in oklab, var(--accent) 15%, var(--card));font-weight:800}
 .aiTable td.c{width:70px;text-align:center}
@@ -77,10 +74,10 @@ tr:nth-child(2n) td{background:color-mix(in oklab, var(--bg) 60%, #fff 40%)}
       </div>
     </div>
 
-    <!-- 純數字 -->
+    <!-- 純數字（不產生起始 dd） -->
     <div id="pane-num" class="hide">
       <div class="row">
-        <div><label>純數字</label><input id="numStr" placeholder="例如 11220587476 或更長的序列"></div>
+        <div><label>純數字</label><input id="numStr" placeholder="例如 28881808192771"></div>
       </div>
       <div class="row" style="margin-top:10px">
         <button id="goNum" class="btn">計算（純數字）</button>
@@ -129,7 +126,7 @@ tr:nth-child(2n) td{background:color-mix(in oklab, var(--bg) 60%, #fff 40%)}
       </table>
     </div>
 
-    <!-- A~I 整合建議表 -->
+    <!-- A~I 建議表 -->
     <table class="aiTable">
       <thead><tr><th style="width:60px">類別</th><th style="width:120px">命格</th><th class="c">次數</th><th>說明</th></tr></thead>
       <tbody id="aiBody"></tbody>
@@ -151,18 +148,13 @@ const FIELD={
   88:"伏位",87:"延年",82:"生氣",86:"天醫",89:"禍害",83:"六煞",84:"絕命",81:"五鬼",
   99:"伏位",91:"延年",93:"生氣",94:"天醫",98:"禍害",92:"六煞",96:"絕命",97:"五鬼",
 };
-/* 顏色對應 */
+/* 顏色對應與文案 */
 const COLOR_CLASS={"生氣":"sheng","天醫":"tian","延年":"yan","伏位":"fu","禍害":"huo","絕命":"jue","六煞":"liu","五鬼":"wu"};
 function chip(name){return `<span class="chip c-${COLOR_CLASS[name]||'fu'}"><span class="dot"></span>${name}</span>`;}
 const TRAIT={
-  "生氣":"貴人與轉機，新生動能。",
-  "天醫":"智慧/資源，配置優化。",
-  "延年":"續航/權力，抗壓領導。",
-  "伏位":"保守穩定、顧家蓄勢。",
-  "禍害":"口舌/小人/面子議題。",
-  "絕命":"大起大落，嚴控風險。",
-  "六煞":"感情/家庭牽動財務。",
-  "五鬼":"偏財/反轉，需守獲利。"
+  "生氣":"貴人與轉機，新生動能。","天醫":"智慧/資源，配置優化。","延年":"續航/權力，抗壓領導。",
+  "伏位":"保守穩定、顧家蓄勢。","禍害":"口舌/小人/面子議題。","絕命":"大起大落，嚴控風險。",
+  "六煞":"感情/家庭牽動財務。","五鬼":"偏財/反轉，需守獲利。"
 };
 
 /* ===== 工具 ===== */
@@ -189,7 +181,7 @@ function renderStats(elId, stats){
   el.innerHTML = `<div class="muted" style="margin-bottom:6px">統計</div>${bars||'<div class="muted">—</div>'}`;
 }
 
-/* ===== 規則（預設：0 重複前碼；5 peek；A→11） ===== */
+/* ===== 規則（正式版）：0 重複前碼；5 peek（不吃） ===== */
 function buildPairsFromID(idn){
   const s=(idn||"").trim().toUpperCase(); if(!s) return [];
   const first=letterTo11(s[0]); if(!first) return [];
@@ -198,13 +190,13 @@ function buildPairsFromID(idn){
     let ch=s[i]; if(!/\d/.test(ch)) continue;
     if(ch==='0'){ ch=prev; }
     else if(ch==='5'){ const next=(i+1<s.length&&/\d/.test(s[i+1]))?s[i+1]:prev; ch=next; } // peek
-    prev = ch; pairs.push(`${pairs[pairs.length-1][1]}${ch}`); // 使用上一 pair 的個位作十位
+    pairs.push(`${prev}${ch}`); prev=ch;
   }
   return pairs;
 }
 function buildPairsFromNumber(numStr){
-  const s=(numStr||"").replace(/\D+/g,""); if(!s) return [];
-  let prev=s[0], pairs=[`${prev}${prev}`];
+  const s=(numStr||"").replace(/\D+/g,""); if(s.length<2) return []; // 純數字：不產生起始 dd
+  let pairs=[], prev=s[0];
   for(let i=1;i<s.length;i++){
     let ch=s[i];
     if(ch==='0'){ ch=prev; }
@@ -228,17 +220,12 @@ document.getElementById('goID').addEventListener('click',()=>{
   document.getElementById('headlineID').innerHTML=
     `<span class="badge">年齡 ${age}</span> <span class="badge">區間 ${BUCKETS[bidx]}</span> <span class="badge">本命 ${benming}</span> <span class="badge">流年 ${liunian}</span>`;
 
-  // 彩色 chips（10 段）
   document.getElementById('chipsID').innerHTML = names.map(n=>chip(n)).join("");
-
-  // 表格
   const tb=document.getElementById('tbodyID'); tb.innerHTML="";
   for(let i=0;i<10;i++){
     const nm=names[i];
     tb.innerHTML+=`<tr><td>${BUCKETS[i]}</td><td>${pairs[i]}</td><td>${chip(nm)}</td><td>${TRAIT[nm]||''}</td></tr>`;
   }
-
-  // 統計長條
   const st=computeStats(names);
   renderStats('statsID', st);
 
@@ -276,17 +263,13 @@ document.getElementById('goNum').addEventListener('click',()=>{
   const pairs=buildPairsFromNumber(raw);
   const names=pairs.map(p=>FIELD[p]||"—");
 
-  // 表格
   const tb=document.getElementById('tbodyNum'); tb.innerHTML="";
   names.forEach((n,i)=>{tb.innerHTML+=`<tr><td>第${i+1}段</td><td>${pairs[i]}</td><td>${chip(n)}</td><td>${TRAIT[n]||''}</td></tr>`});
 
-  // KPI + 統計長條
   const st=computeStats(names);
   document.getElementById('headlineNum').innerHTML =
     `<span class="badge">總段數 ${pairs.length}</span> <span class="badge">主命 ${st.most}</span>`;
   renderStats('statsNum', st);
-
-  // A~I 表（按命格名稱彙總）
   renderAI(st.counts);
 
   document.getElementById('resultNum').style.display='block';
@@ -305,21 +288,37 @@ function setTab(which){
 document.getElementById('tab-id').onclick=()=>setTab('id');
 document.getElementById('tab-num').onclick=()=>setTab('num');
 
-/* ===== 除錯面板（規則可切換） ===== */
+/* ===== 除錯面板 ===== */
 document.getElementById('debugToggle').onclick=()=>{
   const p=document.getElementById('debugPanel');
   p.style.display = (p.style.display==='none'||!p.style.display)?'block':'none';
 };
 function getRadio(name){const el=document.querySelector(`input[name="${name}"]:checked`);return el?el.value:null;}
+// 除錯 pairs：身分證含字母起始；純數字不產生起始 dd
 function buildDebugSteps(input, r0,r5,rA){
-  const s=(input||"").toUpperCase().replace(/\s+/g,"");const pairs=[];let prev=null;let i=0;
-  if(/[A-Z]/.test(s[0])){const init=(rA==='10'?'10':letterTo11(s[0]));pairs.push(init);prev=init[1];i=1;}
-  else if(/\d/.test(s[0])){prev=s[0];pairs.push(prev+prev);i=1;}
-  for(;i<s.length;i++){
-    let ch=s[i]; if(!/\d/.test(ch))continue;
-    if(ch==='0'){ if(r0==='00'){pairs.push("00");continue;} ch=prev; }
-    else if(ch==='5'){ const next=(i+1<s.length&&/\d/.test(s[i+1]))?s[i+1]:prev; if(r5==='peek'){ ch=next; } else { ch=next; i++; prev=next; } }
-    pairs.push(prev+ch); prev=ch;
+  const raw=(input||"").toUpperCase().replace(/\s+/g,""); const pairs=[];
+  if(!raw) return pairs;
+
+  if(/^[A-Z]/.test(raw)){ // 身分證
+    const init=(rA==='10'?'10':letterTo11(raw[0])); pairs.push(init); let prev=init[1];
+    for(let i=1;i<raw.length;i++){
+      let ch=raw[i]; if(!/\d/.test(ch)) continue;
+      if(ch==='0'){ ch=prev; }
+      else if(ch==='5'){ const next=(i+1<raw.length && /\d/.test(raw[i+1]))?raw[i+1]:prev; if(r5==='peek'){ ch=next; }else{ ch=next; i++; prev=next; } }
+      pairs.push(`${prev}${ch}`); prev=ch;
+    }
+    return pairs;
+  }
+  if(/^\d/.test(raw)){ // 純數字
+    if(raw.length<2) return pairs;
+    let prev=raw[0];
+    for(let i=1;i<raw.length;i++){
+      let ch=raw[i];
+      if(ch==='0'){ ch=prev; }
+      else if(ch==='5'){ const next=(i+1<raw.length)?raw[i+1]:prev; if(r5==='peek'){ ch=next; }else{ ch=next; i++; prev=next; } }
+      pairs.push(`${prev}${ch}`); prev=ch;
+    }
+    return pairs;
   }
   return pairs;
 }
@@ -327,7 +326,7 @@ function renderDebug(val,pairs){
   const rows=pairs.map((p,i)=>`<tr><td>${i}</td><td>${p}</td><td>${FIELD[p]||'—'}</td></tr>`).join('');
   document.getElementById('debugTable').innerHTML =
     `<div class="muted">輸入：<span class="mono">${val}</span></div>
-     <table><thead><tr><th>#</th><th>pair</th><th>命名</th></tr></thead><tbody>${rows}</tbody></table>
+     <table><thead><tr><th>#</th><th>pair</th><th>命名</th></tr></thead><tbody>${rows||'<tr><td colspan="3" class="muted">—</td></tr>'}</tbody></table>
      <div class="muted" style="margin-top:6px">pairs：<span class="mono">${JSON.stringify(pairs)}</span></div>`;
 }
 function runDebugIfOpen(val){
